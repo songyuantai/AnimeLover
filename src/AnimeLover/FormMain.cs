@@ -9,6 +9,7 @@ using AnimeLover.Event;
 using AnimeLover.Page;
 using AnimeLover.Busi;
 using AnimeLover.Model;
+using LibVLCSharp.Shared;
 
 namespace AnimeLover
 {
@@ -44,6 +45,8 @@ namespace AnimeLover
             PlayerControl.BindPlay(OpenPlayer);
 
             DbManager.Merge();
+            var lib = Path.Combine(AppContext.BaseDirectory, "vlclib");
+            Core.Initialize(lib);
         }
 
         private System.Windows.Forms.Form player;

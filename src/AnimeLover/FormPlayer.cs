@@ -39,7 +39,6 @@ namespace AnimeLover
             //标题
             Text = $"{anime.Name} 第{video.Episode}集";
 
-            Core.Initialize();
             libvlc = new LibVLC();
 
             media = new Media(libvlc, new Uri(video.PhysicalPath));
