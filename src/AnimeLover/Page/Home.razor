@@ -1,0 +1,36 @@
+﻿@page "/"
+@inject NavigationManager navigationManager
+<div class="container">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach(var animie in Animes)
+        {
+            <div class="col p-1">
+                <div class="card border-dark" @onclick="@((e) => ShowAnime(animie.Id))">
+                    <img src="@Util.GetPictureUri(animie.Cover)" class="card-img-top" alt="@animie.Name" style="height:208px; width:auto;margin:0 auto;">
+                    <div class="card-body text-center" style="padding:8px !important">
+                        <span class="card-title">@animie.Name</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+@code {
+
+    protected override void OnInitialized()
+    {
+        var db = BlazorApp.Database;
+
+        Animes = db.Queryable<Anime>()
+                   .OrderBy(nameof(Anime.CreatedDate))
+                   .ToList();
+
+    }
+
+    protected List<Anime> Animes { get; set; }
+
+    protected void ShowAnime(int id)
+    {
+        navigationManager.NavigateTo("AnimeDetail/" + id);
+    }
+}

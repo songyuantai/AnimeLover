@@ -1,0 +1,28 @@
+﻿@inherits LayoutComponentBase
+<Layout>
+    <LayoutHeader>
+        <Bar Breakpoint="Breakpoint.Desktop"
+             Background="Background.Dark"
+             ThemeContrast="ThemeContrast.Dark">
+            <a class="navbar-brand" href="/">
+                Anime Lover
+            </a>
+            <BarMenu>
+                <BarStart>
+                    <BarItem>
+                        <BarLink To="netdisk">浏览</BarLink>
+                    </BarItem>
+                </BarStart>
+                <BarEnd>
+                    <BarItem>
+                        <BarLink To="setting">设置</BarLink>
+                    </BarItem>
+                </BarEnd>
+            </BarMenu>
+        </Bar>
+    </LayoutHeader>
+    <LayoutContent>
+        @Body
+        <Cornor />
+    </LayoutContent>
+</Layout>

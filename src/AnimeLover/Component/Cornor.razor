@@ -1,0 +1,154 @@
+﻿@using AnimeLover.Event
+@inject IJSRuntime jsRuntime
+<div class="cornor">
+    <button class="btn btn-outline-success rounded-circle" @onclick="ShowModal">
+        <span class="fa fa-plus"></span>
+    </button>
+    <button class="btn btn-outline-success rounded-circle" hidden="@HiddenToTop" @onclick="ScrollTop">
+        <span class="fa fa-arrow-circle-up"></span>
+    </button>
+</div>
+<Modal @ref="modalRef">
+    <ModalContent Centered Size="ModalSize.ExtraLarge">
+        <ModalHeader>
+            <ModalTitle>新番</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <div class="row">
+                @foreach(var animie in SeasonAnimes)
+                {
+                    <div class="col-lg-4 col-sm-12 p-1">
+                        <div class="card">
+                            <div class="card-body">
+                                <p class="card-title" title="@animie.Name">
+                                    @(Util.GetSimpleName(animie.Name))
+                                    <span class="card-text text-danger text-sm">@animie.DayOfWeekText</span></p>
+
+                                <div class="input-group mt-3">
+                                    <input type="text" class="form-control" placeholder="关键字..." @bind="@animie.Keyword">
+                                    <Button Class="btn btn-outline-success" @onclick="@(e => Subscribe(animie))">
+                                        订阅</Button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </ModalBody>
+        <ModalFooter>
+            <Button Class="btn btn-success" @onclick="@(e => GetSeasonAnimies())">获取</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+@code {
+
+    private Modal modalRef;
+
+    [Inject] IMessageService MessageService { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ScrollControl.ScrollEvent += OnScroll;
+        var db = BlazorApp.Database;
+
+        var season = Util.GetCurrentSeason();
+        SeasonAnimes = db.Queryable<SeasonAnime>()
+                        .OrderBy(nameof(SeasonAnime.DayOfWeek))
+                        .OrderBy(nameof(SeasonAnime.SeasonAnimeId))
+                        .Where(m => m.Season == season)
+                        .ToList();
+    }
+
+    
+    protected List<SeasonAnime> SeasonAnimes { get; set; }
+
+    private Task ShowModal()
+    {
+        return modalRef.Show();
+    }
+
+    private Task HideModal()
+    {
+        return modalRef.Hide();
+    }
+
+    private async Task Subscribe(SeasonAnime view)
+    {
+        var db = BlazorApp.Database;
+
+        var anime = db.Queryable<Anime>().First(m => m.Name == view.Name);
+        if(null == anime)
+        {
+            anime = new Anime
+            {
+                Name = view.Name,
+                PhysicalPath = Path.Combine(BlazorApp.Config.Addr, view.Name),
+                Season = Util.GetCurrentSeason(),
+                Description =string.Empty,
+                CoverName = string.Empty,
+                DateOfWeek = view.DayOfWeek,
+                Keyword = view.Keyword,
+                SearchEngine = Busi.SearchEngine.ComitCat,
+                CreatedDate = DateTime.Now
+            };
+
+            db.Insertable(anime).ExecuteCommandIdentityIntoEntity();
+
+            if (!System.IO.Directory.Exists(anime.PhysicalPath))
+            {
+                System.IO.Directory.CreateDirectory(anime.PhysicalPath);
+            }
+
+            StateHasChanged();
+
+            await MessageService.Success("番剧订阅成功！");
+        }
+        else
+        {
+            await MessageService.Warning("番剧已订阅！");
+        }
+
+    }
+
+    /// <summary>
+    /// 获取当季番剧
+    /// </summary>
+    private async void GetSeasonAnimies()
+    {
+        var list = await AnimeLover.Busi.ComcatProvider.GetSeasonAnimies();
+        foreach(var seasonAnime in list)
+        {
+            if(!SeasonAnimes.Any(m => m.Season == seasonAnime.Season && m.Name == seasonAnime.Name))
+            {
+                BlazorApp.Database.Insertable(seasonAnime).ExecuteCommandIdentityIntoEntity();
+                SeasonAnimes.Add(seasonAnime);
+            }
+        }
+        await MessageService.Success("新番更新！");
+    }
+
+    
+    private bool HiddenToTop = true;
+
+    private void OnScroll(int yValue)
+    {
+        if(yValue > 0)
+        {
+            HiddenToTop = false;
+        }
+        else
+        {
+            HiddenToTop = true;
+        }
+        StateHasChanged();
+    }
+
+    private async Task ScrollTop()
+    {
+        await jsRuntime.InvokeAsync<string>("scrollToTop");
+    }
+
+
+}

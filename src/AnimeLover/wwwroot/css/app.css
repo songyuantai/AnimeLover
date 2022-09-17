@@ -1,0 +1,83 @@
+﻿html, body {
+    font-family: "SF Pro Display",Roboto,Noto,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size: 14px;
+}
+
+h1:focus {
+    outline: none;
+}
+
+a, .btn-link {
+    color: #0071c1;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid red;
+}
+
+.validation-message {
+    color: red;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.view-table th {
+/*    background-color: rgba(0, 0, 128, 0.3);*/
+    font-weight: bold;
+    text-align:right;
+}
+
+.view-table td {
+    text-align: left;
+}
+
+.border-dashed {
+    border-style:dashed !important;
+}
+
+/*.view-table th, .view-table td {
+    border-color: #1b6ec2;
+}*/
+
+.cornor {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    text-align: center;
+    display: flex;
+    flex-direction:column;
+    padding:15px;
+    padding-bottom:0;
+}
+
+    .cornor > button {
+        margin-bottom:15px;
+    }

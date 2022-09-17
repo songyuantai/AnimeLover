@@ -1,0 +1,326 @@
+﻿@page "/animedetail/{Id:int}"
+@using AnimeLover.Event
+@inject IJSRuntime jsRuntime
+@inject NavigationManager navigationManager
+<div class="container">
+    <div class="row mt-3 mb-3">
+        <div class="col-12 border">
+            <div class="d-flex pt-3" style="flex-direction: row;justify-content:space-around">
+                <img src="@Util.GetPictureUri(_anime?.Cover)" style="height:175px;margin:0;" />
+                <div style="flex-grow: 1;">
+                    <table class="table table-bordered view-table">
+                        <tbody>
+                            <tr>
+                                <th>
+                                    名称
+                                </th>
+                                <td>
+                                    @_anime.Name
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    季度
+                                </th>
+                                <td>
+                                    @_anime.Season
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    来源
+                                </th>
+                                <td>
+                                    @_anime.SearchEngine
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    关键字
+                                </th>
+                                <td>
+                                    @_anime.Keyword
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 border" style="min-height: 400px;">
+            <Tabs SelectedTab="play" Class="mt-3">
+                <Items>
+                    <Tab Name="play">分集</Tab>
+                    <li class="nav-item ml-auto mr-2">
+                        <select class="form-control" @bind="@downloader" title="下载器">
+                            <option value="@DownloadProvider.Thounder">迅雷</option>
+                            <option value="@DownloadProvider.QBitTorrent">QBitTorrent</option>
+                        </select>
+                    </li>
+                    <li class="nav-item mr-2">
+                        <button class="btn btn-warning" @onclick="EditAnime">
+                            <i class="fa fa-edit"></i>
+                            编辑
+                        </button>
+                    </li>
+                    <li class="nav-item mr-2">
+                        <button class="btn btn-success" @onclick="@Pull" disabled="@pullDisabled">
+                            <i class="@PullIcon"></i>
+                            获取
+                        </button>
+                    </li>
+                    <li class="nav-item mr-2">
+                        <Dropdown>
+                            <DropdownToggle Color="Color.Danger">
+                                删除
+                            </DropdownToggle>
+                            <DropdownMenu>
+                                <DropdownItem Clicked="e => DeleteData(DeleteOption.RemoveAll)" title="全部删除">全部</DropdownItem>
+                                <DropdownItem Clicked="e => DeleteData(DeleteOption.ClearVideo)" title="删除剧集">剧集</DropdownItem>
+                                <DropdownItem Clicked="e => DeleteData(DeleteOption.KeepFiles)" title="清空结构数据，保留文件">数据</DropdownItem>
+                                <DropdownItem Clicked="e => DeleteData(DeleteOption.KeepData)" title="清空文件，保留结构数据">文件</DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
+                    </li>
+                </Items>
+                <Content>
+                    <TabPanel Name="play" Style="padding-top:20px;padding-bottom:20px;">
+                        @foreach (var video in _videoList)
+                        {
+                            var borderStyle = string.IsNullOrEmpty(video.PhysicalPath) ? "border-dashed" : string.Empty;
+                            var btnStyle = video.Id == _anime.LastPlayVideo && !string.IsNullOrEmpty(video.PhysicalPath) ? "btn-success" : "btn-outline-success";
+                            <button class="btn @btnStyle @borderStyle" @onclick="@(e => Play(video))" Style="margin: 5px 10px;">
+                                @video.Episode
+                            </button>
+                        }
+                    </TabPanel>
+                </Content>
+            </Tabs>
+        </div>
+    </div>
+</div>
+<AnimeEditor @ref="animeEditor" 
+    Id="@_anime.Id" 
+    Name="@_anime.Name"
+    Keyword="@_anime.Keyword"
+    PhysicalPath="@_anime.PhysicalPath"
+    Season="@_anime.Season" />
+
+@code {
+    [Inject] IMessageService MessageService { get; set; }
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private Anime _anime;
+
+    private List<AnimeVideo> _videoList;
+
+    private string downloader = DownloadProvider.QBitTorrent;
+
+    private async void Play(AnimeVideo video)
+    {
+        if (string.IsNullOrEmpty(video.PhysicalPath))
+        {
+            //检查是否下载完成
+            var path = Path.Combine(BlazorApp.Config.Addr, _anime.Name);
+            if (Directory.Exists(path))
+            {
+                foreach (var fileName in Directory.GetFiles(path))
+                {
+                    var extension = Path.GetExtension(fileName).ToLower();
+                    if (fileName.Contains($"[{video.Episode}]") && extension != ".torrent")
+                    {
+                        video.PhysicalPath = fileName;
+                        BlazorApp.Database.Updateable(video).ExecuteCommand();
+                        break;
+                    }
+                }
+            }
+
+            //下载
+            if (string.IsNullOrEmpty(video.PhysicalPath))
+            {
+                if (downloader == DownloadProvider.QBitTorrent)
+                {
+                    await QBitTorrentApi.Download(video.MagnetLink, path);
+                    await MessageService.Success("下载任务已添加！");
+                }
+                else if (downloader == DownloadProvider.Thounder)
+                {
+                    await jsRuntime.InvokeAsync<string>("ThounderDownload", video.MagnetLink);
+                    await MessageService.Success("下载任务已添加！");
+                }
+                else
+                {
+                    await MessageService.Success("下载器未知！");
+                }
+            }
+            else
+            {
+                PlayerControl.PlayVideo(_anime, video);
+            }
+        }
+        else
+        {
+            PlayerControl.PlayVideo(_anime, video);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        if (Id > 0)
+        {
+            var db = BlazorApp.Database;
+
+            _anime = db.Queryable<Anime>().First(m => m.Id == Id);
+
+            _videoList = db.Queryable<AnimeVideo>()
+                           .Where(m => m.AnimeId == Id)
+                           .OrderBy(m => m.Episode)
+                           .ToList();
+
+            
+        }
+    }
+
+    [Parameter]
+    public string PullIcon { get; set; } = "fa fa-cog";
+
+    private bool pullDisabled = false;
+
+    /// <summary>
+    /// 拉取番剧视频
+    /// </summary>
+    private async void Pull()
+    {
+        PullIcon = "fa fa-cog fa-spin fa-fw";
+        pullDisabled = true;
+
+        await ComcatProvider.GetAnimeVideoAsync(_anime.Id, _anime.Keyword);
+
+        _videoList = BlazorApp.Database.Queryable<AnimeVideo>()
+                .Where(m => m.AnimeId == Id)
+                .OrderBy(m => m.Episode)
+                .ToList();
+
+        PullIcon = "fa fa-cog";
+        pullDisabled = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// 删除选项
+    /// </summary>
+    public enum DeleteOption
+    {
+        /// <summary>
+        /// 仅删除剧集信息
+        /// </summary>
+        ClearVideo,
+
+        /// <summary>
+        /// 删除所有
+        /// </summary>
+        RemoveAll,
+
+        /// <summary>
+        /// 只要物理文件，其他信息全部删除
+        /// </summary>
+        KeepFiles,
+
+        /// <summary>
+        /// 仅清空物理文件
+        /// </summary>
+        KeepData
+    }
+
+    /// <summary>
+    /// 清空番剧分集
+    /// </summary>
+    /// <returns></returns>
+    protected async Task DeleteData(DeleteOption option)
+    {
+        var db = BlazorApp.Database;
+        if(option == DeleteOption.ClearVideo)
+        {
+            //只删除数据库剧集
+            db.Deleteable<AnimeVideo>(m => m.AnimeId == _anime.Id).ExecuteCommand();
+            _videoList = new List<AnimeVideo>();
+            await MessageService.Success("删除成功!");
+        }
+        else if(option == DeleteOption.RemoveAll)
+        {
+            //删除所有
+            db.BeginTran();
+            db.Deleteable<AnimeVideo>(m => m.AnimeId == _anime.Id).ExecuteCommand();
+            db.Deleteable<Anime>(m => m.Id == _anime.Id).ExecuteCommand();
+            db.CommitTran();
+            db.RollbackTran();
+
+            //循环删除
+            Directory.Delete(_anime.PhysicalPath, true);
+            _videoList = new List<AnimeVideo>();
+            var isGotoAnimeList = await MessageService.Confirm("删除成功，返回追番列表吗？");
+            if (isGotoAnimeList)
+            {
+                navigationManager.NavigateTo("/");
+            }
+        }
+        else if(option == DeleteOption.KeepData)
+        {
+            //仅删除文件
+            db.BeginTran();
+            foreach(var video in _videoList)
+            {
+                if (!string.IsNullOrEmpty(video.PhysicalPath))
+                {
+                    File.Delete(video.PhysicalPath);
+                    video.PhysicalPath = string.Empty;
+                    db.Updateable(video).ExecuteCommand();
+                }
+            }
+
+            db.CommitTran();
+            db.RollbackTran();
+            await MessageService.Success("删除成功!");
+        }
+        else if(option == DeleteOption.KeepFiles)
+        {
+            //仅保留文件
+            db.BeginTran();
+            db.Deleteable<AnimeVideo>(m => m.AnimeId == _anime.Id).ExecuteCommand();
+            db.Deleteable<Anime>(m => m.Id == _anime.Id).ExecuteCommand();
+            db.CommitTran();
+            db.RollbackTran();
+
+            _videoList = new List<AnimeVideo>();
+            var isGotoAnimeList = await MessageService.Confirm("删除成功，返回追番列表吗？");
+            if (isGotoAnimeList)
+            {
+                navigationManager.NavigateTo("/");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 编辑番剧
+    /// </summary>
+    /// <returns></returns>
+    protected async Task EditAnime()
+    {
+        await animeEditor.ShowModal();
+        animeEditor.AnimeUpdated += AnimeUpdated;
+    }
+
+    private void AnimeUpdated(Anime anime)
+    {
+        _anime = anime;
+        StateHasChanged();
+    }
+
+    protected AnimeEditor animeEditor;
+
+}

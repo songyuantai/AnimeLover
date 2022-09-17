@@ -1,0 +1,63 @@
+﻿@page "/setting"
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12 col-md-8 offset-md-2 pt-4">
+            <form>
+                <input type="hidden" @bind-value="@SysConfig.ConfigId" />
+                <div class="form-group">
+                    <label>存储地址</label>
+                    <input class="form-control" @bind-value="@SysConfig.Addr" />
+                </div>
+                <div class="form-group">
+                    <label>QBitTorrent Api</label>
+                    <input class="form-control" @bind-value="@SysConfig.QBitApi" />
+                </div>
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input class="form-control" @bind-value="@SysConfig.QBitUser" />
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input class="form-control" @bind-value="@SysConfig.QBitPassword" />
+                </div>
+                <div class="text-center pt-4">
+                    <button class="btn btn-primary" @onclick="@Save">
+                        <span class="fa fa-save"></span>
+                        保存
+                    </button>
+                    &nbsp;
+                    <button class="btn btn-secondary" type="reset">
+                        <span class="fa fa-undo"></span>
+                        重置
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    protected SysConfig SysConfig { get; set; }
+
+    protected override void OnInitialized()
+    {
+        SysConfig = BlazorApp.Config ?? new SysConfig();
+    }
+
+    protected void Save()
+    {
+        var client = BlazorApp.Database;
+        if (SysConfig.ConfigId > 0)
+        {
+            client.Updateable(SysConfig).ExecuteCommand();
+        }
+        else
+        {
+            client.Insertable(SysConfig).ExecuteCommand();
+        }
+
+        BlazorApp.Config = SysConfig;
+    }
+}
