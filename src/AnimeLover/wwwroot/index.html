@@ -48,10 +48,6 @@
             DotNet.invokeMethodAsync('AnimeLover', 'Scroll', scrollTop);
         }
 
-        window.RegisterScrollInfoService = (scrollInfoService) => {
-            window.scrollInfoService = scrollInfoService;
-        }
-
         function scrollToTop()
         {
             document.body.scrollTop = document.documentElement.scrollTop = 0;
