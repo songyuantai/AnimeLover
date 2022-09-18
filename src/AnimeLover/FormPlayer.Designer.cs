@@ -35,8 +35,8 @@
             this.uiLabel1 = new Sunny.UI.UILabel();
             this.btnFullScreen = new Sunny.UI.UISymbolButton();
             this.btnStop = new Sunny.UI.UISymbolButton();
-            this.btnMoveNext = new Sunny.UI.UISymbolButton();
-            this.btnMoveForward = new Sunny.UI.UISymbolButton();
+            this.Next_Button = new Sunny.UI.UISymbolButton();
+            this.Prev_Button = new Sunny.UI.UISymbolButton();
             this.btnPlay = new Sunny.UI.UISymbolButton();
             this.videoTimeTracker = new Sunny.UI.UITrackBar();
             ((System.ComponentModel.ISupportInitialize)(this.videoView1)).BeginInit();
@@ -75,8 +75,8 @@
             this.splitContainer1.Panel2.Controls.Add(this.uiLabel1);
             this.splitContainer1.Panel2.Controls.Add(this.btnFullScreen);
             this.splitContainer1.Panel2.Controls.Add(this.btnStop);
-            this.splitContainer1.Panel2.Controls.Add(this.btnMoveNext);
-            this.splitContainer1.Panel2.Controls.Add(this.btnMoveForward);
+            this.splitContainer1.Panel2.Controls.Add(this.Next_Button);
+            this.splitContainer1.Panel2.Controls.Add(this.Prev_Button);
             this.splitContainer1.Panel2.Controls.Add(this.btnPlay);
             this.splitContainer1.Panel2.Controls.Add(this.videoTimeTracker);
             this.splitContainer1.Size = new System.Drawing.Size(1344, 821);
@@ -133,31 +133,31 @@
             this.btnStop.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
             this.btnStop.Click += new System.EventHandler(this.ButtonStop_Click);
             // 
-            // btnMoveNext
+            // Next_Button
             // 
-            this.btnMoveNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
-            this.btnMoveNext.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.btnMoveNext.Location = new System.Drawing.Point(696, 24);
-            this.btnMoveNext.MinimumSize = new System.Drawing.Size(1, 1);
-            this.btnMoveNext.Name = "btnMoveNext";
-            this.btnMoveNext.Size = new System.Drawing.Size(48, 34);
-            this.btnMoveNext.Symbol = 61518;
-            this.btnMoveNext.TabIndex = 3;
-            this.btnMoveNext.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
-            this.btnMoveNext.Click += new System.EventHandler(this.ButtonMoveNext_Click);
+            this.Next_Button.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
+            this.Next_Button.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.Next_Button.Location = new System.Drawing.Point(696, 24);
+            this.Next_Button.MinimumSize = new System.Drawing.Size(1, 1);
+            this.Next_Button.Name = "Next_Button";
+            this.Next_Button.Size = new System.Drawing.Size(48, 34);
+            this.Next_Button.Symbol = 61520;
+            this.Next_Button.TabIndex = 3;
+            this.Next_Button.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
+            this.Next_Button.Click += new System.EventHandler(this.Next_Button_Click);
             // 
-            // btnMoveForward
+            // Prev_Button
             // 
-            this.btnMoveForward.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
-            this.btnMoveForward.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.btnMoveForward.Location = new System.Drawing.Point(588, 24);
-            this.btnMoveForward.MinimumSize = new System.Drawing.Size(1, 1);
-            this.btnMoveForward.Name = "btnMoveForward";
-            this.btnMoveForward.Size = new System.Drawing.Size(48, 34);
-            this.btnMoveForward.Symbol = 61514;
-            this.btnMoveForward.TabIndex = 2;
-            this.btnMoveForward.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
-            this.btnMoveForward.Click += new System.EventHandler(this.ButtonMoveForward_Click);
+            this.Prev_Button.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
+            this.Prev_Button.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.Prev_Button.Location = new System.Drawing.Point(588, 24);
+            this.Prev_Button.MinimumSize = new System.Drawing.Size(1, 1);
+            this.Prev_Button.Name = "Prev_Button";
+            this.Prev_Button.Size = new System.Drawing.Size(48, 34);
+            this.Prev_Button.Symbol = 61513;
+            this.Prev_Button.TabIndex = 2;
+            this.Prev_Button.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
+            this.Prev_Button.Click += new System.EventHandler(this.Prev_Button_Click);
             // 
             // btnPlay
             // 
@@ -217,8 +217,8 @@
         private Sunny.UI.UILabel uiLabel1;
         private Sunny.UI.UISymbolButton btnFullScreen;
         private Sunny.UI.UISymbolButton btnStop;
-        private Sunny.UI.UISymbolButton btnMoveNext;
-        private Sunny.UI.UISymbolButton btnMoveForward;
+        private Sunny.UI.UISymbolButton Next_Button;
+        private Sunny.UI.UISymbolButton Prev_Button;
         private Sunny.UI.UISymbolButton btnPlay;
         private Sunny.UI.UITrackBar videoTimeTracker;
         private Sunny.UI.UITrackBar volumeTracker;

@@ -15,75 +15,126 @@ using System.Windows.Forms;
 
 namespace AnimeLover
 {
+    /// <summary>
+    /// 动漫播放器
+    /// </summary>
     public partial class FormPlayer : Form
     {
-        private LibVLC libvlc;
+        #region 构造函数与参数
+        /// <summary>
+        /// vlc库
+        /// </summary>
+        private readonly LibVLC libvlc;
 
+        /// <summary>
+        /// 多媒体文件
+        /// </summary>
         private Media media;
 
-        public Form Opener { get; set; }
+        /// <summary>
+        /// 动漫信息
+        /// </summary>
+        private readonly Anime anime;
 
-        private Anime anime;
-
+        /// <summary>
+        /// 剧集信息
+        /// </summary>
         private AnimeVideo video;
 
+        /// <summary>
+        /// main窗口
+        /// </summary>
+        public Form Opener { get; set; }
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="anime"></param>
+        /// <param name="video"></param>
         public FormPlayer(Anime anime, AnimeVideo video)
         {
             this.video = video;
             this.anime = anime;
+            libvlc = new LibVLC();
             InitializeComponent();
         }
+        #endregion
 
+        #region event
+
+        /// <summary>
+        /// 窗口初始化加载
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void FormPlayer_Load(object sender, EventArgs e)
         {
-            //标题
-            Text = $"{anime.Name} 第{video.Episode}集";
+            InitPlayer();
+            PlayWithRecord();
+        }
 
-            libvlc = new LibVLC();
-
-            media = new Media(libvlc, new Uri(video.PhysicalPath));
-
-            videoView1.MediaPlayer = new MediaPlayer(media);
-            volumeTracker.Value = videoView1.MediaPlayer.Volume;
-            videoView1.MediaPlayer.TimeChanged += OnTimeChange;
-            videoView1.MediaPlayer.Paused += (sender, e) =>
+        /// <summary>
+        /// 关闭窗口前
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void FormPlayer_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (videoView1.MediaPlayer?.Media?.State == VLCState.Playing)
             {
-                btnPlay.Symbol = 61515;
-            };
-            videoView1.MediaPlayer.Playing += (sender, e) =>
-            {
-                btnPlay.Symbol = 61516;
-            };
-            videoView1.MediaPlayer.EndReached += MediaPlayer_EndReached;
+                SetPlayTime();
 
-            videoView1.MediaPlayer.Play();
-
-            if (video.LastPlayTime != null)
-            {
-                videoView1.MediaPlayer?.Pause();
-                videoView1.MediaPlayer.SeekTo(video.LastPlayTime.Value);
-                videoView1.MediaPlayer.Play();
+                Invoke(() =>
+                {
+                    videoView1.MediaPlayer.Stop();
+                });
             }
 
-            anime.LastPlayVideo = video.Id;
-            BlazorApp.Database.Updateable(anime).ExecuteCommand();
+            //释放
+            videoView1.MediaPlayer?.Dispose();
+
+            media?.Dispose();
+
+            libvlc?.Dispose();
+
+            Opener?.Show();
         }
 
+        /// <summary>
+        /// 播放停止
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MediaPlayer_EndReached(object sender, EventArgs e)
         {
-            Invoke(() =>
+            var episodeNum = Convert.ToInt32(video.Episode) + 1;
+            var episode = episodeNum.ToString().PadLeft(2, '0');
+            var nextVideo = BlazorApp.Database.Queryable<AnimeVideo>().First(m => m.Episode == episode);
+            if (!string.IsNullOrEmpty(nextVideo?.Episode))
             {
-                var total = videoView1.MediaPlayer?.Media?.Duration ?? 0;
-                var tsAll = TimeSpan.FromMilliseconds(total);
-                var tsCurrent = TimeSpan.FromMilliseconds(total);
-                var text = tsCurrent.ToString(@"hh\:mm\:ss") + "/" + tsAll.ToString(@"hh\:mm\:ss");
+                Jump(1);
+            }
+            else
+            {
+                Invoke(() =>
+                {
+                    var total = videoView1.MediaPlayer?.Media?.Duration ?? 0;
+                    var tsAll = TimeSpan.FromMilliseconds(total);
+                    var tsCurrent = TimeSpan.FromMilliseconds(total);
+                    var text = tsCurrent.ToString(@"hh\:mm\:ss") + "/" + tsAll.ToString(@"hh\:mm\:ss");
 
-                uiLabel1.Text = text;
+                    uiLabel1.Text = text;
 
-                videoTimeTracker.Value = (int)Math.Floor((double)(total * 100 / total));
-            });
+                    videoTimeTracker.Value = (int)Math.Floor((double)(total * 100 / total));
+                });
+            }
         }
 
+        /// <summary>
+        /// 播放时间变化
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnTimeChange(object sender, MediaPlayerTimeChangedEventArgs e)
         {
             Invoke(() =>
@@ -99,8 +150,11 @@ namespace AnimeLover
             });
         }
 
-
-
+        /// <summary>
+        /// 按下键盘
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void FormPlayer_KeyDown(object sender, KeyEventArgs e)
         {
             if (null != videoView1.MediaPlayer)
@@ -149,32 +203,11 @@ namespace AnimeLover
             }
         }
 
-        private void FullScreen()
-        {
-            FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            WindowState = FormWindowState.Maximized;
-            Rectangle ret = Screen.GetWorkingArea(this);
-
-            videoView1.ClientSize = new Size(ret.Width, ret.Height);
-            videoView1.Parent = this;
-            videoView1.Dock = DockStyle.Fill;
-            videoView1.BringToFront();
-
-            if (null != videoView1.MediaPlayer)
-                videoView1.MediaPlayer.Fullscreen = true;
-        }
-
-        private void ExitFullScreen()
-        {
-            FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-            WindowState = FormWindowState.Normal;
-            videoView1.Parent = splitContainer1.Panel1;
-            videoView1.SendToBack();
-
-            if (null != videoView1.MediaPlayer)
-                videoView1.MediaPlayer.Fullscreen = false;
-        }
-
+        /// <summary>
+        /// 改变音量
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void VolumeTracker_ValueChanged(object sender, EventArgs e)
         {
             if (null != videoView1.MediaPlayer)
@@ -182,7 +215,7 @@ namespace AnimeLover
         }
 
         /// <summary>
-        /// 鼠标拖动的时候
+        /// 改变播放进度条
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -213,6 +246,11 @@ namespace AnimeLover
             }
         }
 
+        /// <summary>
+        /// 播放
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ButtonPlay_Click(object sender, EventArgs e)
         {
             Invoke(() =>
@@ -228,6 +266,11 @@ namespace AnimeLover
             });
         }
 
+        /// <summary>
+        /// 停止
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ButtonStop_Click(object sender, EventArgs e)
         {
             Invoke(() =>
@@ -237,6 +280,11 @@ namespace AnimeLover
             });
         }
 
+        /// <summary>
+        /// 快退（弃用）
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ButtonMoveForward_Click(object sender, EventArgs e)
         {
             Invoke(() =>
@@ -256,6 +304,11 @@ namespace AnimeLover
 
         }
 
+        /// <summary>
+        /// 快进（弃用）
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ButtonMoveNext_Click(object sender, EventArgs e)
         {
             Invoke(() =>
@@ -276,28 +329,153 @@ namespace AnimeLover
             });
         }
 
-        private void FormPlayer_FormClosing(object sender, FormClosingEventArgs e)
+        /// <summary>
+        /// 上一集
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Prev_Button_Click(object sender, EventArgs e)
         {
-            if (videoView1.MediaPlayer?.Media?.State == VLCState.Playing)
+            Jump(-1);
+        }
+
+        /// <summary>
+        /// 下一集
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Next_Button_Click(object sender, EventArgs e)
+        {
+            Jump(1);
+        }
+
+        #endregion
+
+        #region 私有方法
+
+        /// <summary>
+        /// 初始化播放器
+        /// </summary>
+        private void InitPlayer()
+        {
+            media = new Media(libvlc, new Uri(video.PhysicalPath));
+
+            videoView1.MediaPlayer = new MediaPlayer(media);
+            volumeTracker.Value = videoView1.MediaPlayer.Volume;
+            videoView1.MediaPlayer.TimeChanged += OnTimeChange;
+            videoView1.MediaPlayer.Paused += (sender, e) =>
+            {
+                btnPlay.Symbol = 61515;
+            };
+            videoView1.MediaPlayer.Playing += (sender, e) =>
+            {
+                btnPlay.Symbol = 61516;
+            };
+            videoView1.MediaPlayer.EndReached += MediaPlayer_EndReached;
+        }
+
+        /// <summary>
+        /// 播放并记录
+        /// </summary>
+        private void PlayWithRecord()
+        {
+            //标题
+            Text = $"{anime.Name} 第{video.Episode}集";
+
+            videoView1.MediaPlayer.Play();
+            if (video.LastPlayTime != null)
+            {
+                videoView1.MediaPlayer.Pause();
+                videoView1.MediaPlayer.SeekTo(video.LastPlayTime.Value);
+                videoView1.MediaPlayer.Play();
+            }
+            else
+            {
+                videoView1.MediaPlayer.Play();
+            }
+
+            anime.LastPlayVideo = video.Id;
+            BlazorApp.Database.Updateable(anime).ExecuteCommand();
+        }
+
+        /// <summary>
+        /// 跳转
+        /// </summary>
+        /// <param name="offset"></param>
+        private void Jump(int offset)
+        {
+            var episodeNum = Convert.ToInt32(video.Episode) + offset;
+            if(episodeNum > 0)
+            {
+                var episode = episodeNum.ToString().PadLeft(2, '0');
+
+                var nextVideo = BlazorApp.Database.Queryable<AnimeVideo>().First(m => m.Episode == episode);
+
+                if (!string.IsNullOrEmpty(nextVideo?.PhysicalPath))
+                {
+                    SetPlayTime();
+
+                    Invoke(() =>
+                    {
+                        videoView1.MediaPlayer.Stop();
+                        var oldMedia = videoView1.MediaPlayer.Media;
+
+                        video = nextVideo;
+                        var newMedia = new Media(libvlc, new Uri(video.PhysicalPath));
+                        videoView1.MediaPlayer.Media = newMedia;
+                        oldMedia?.Dispose();
+                        oldMedia = null;
+                        PlayWithRecord();
+                    });
+                }
+            }
+        }
+
+        /// <summary>
+        /// 全屏
+        /// </summary>
+        private void FullScreen()
+        {
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            WindowState = FormWindowState.Maximized;
+            Rectangle ret = Screen.GetWorkingArea(this);
+
+            videoView1.ClientSize = new Size(ret.Width, ret.Height);
+            videoView1.Parent = this;
+            videoView1.Dock = DockStyle.Fill;
+            videoView1.BringToFront();
+
+            if (null != videoView1.MediaPlayer)
+                videoView1.MediaPlayer.Fullscreen = true;
+        }
+
+        /// <summary>
+        /// 退出全屏
+        /// </summary>
+        private void ExitFullScreen()
+        {
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
+            WindowState = FormWindowState.Normal;
+            videoView1.Parent = splitContainer1.Panel1;
+            videoView1.SendToBack();
+
+            if (null != videoView1.MediaPlayer)
+                videoView1.MediaPlayer.Fullscreen = false;
+        }
+
+        /// <summary>
+        /// 记录播放时间
+        /// </summary>
+        private void SetPlayTime()
+        {
+            if(videoView1.MediaPlayer.Time > 0)
             {
                 var time = TimeSpan.FromMilliseconds(videoView1.MediaPlayer.Time);
                 video.LastPlayTime = time;
                 BlazorApp.Database.Updateable(video).ExecuteCommand();
-
-                Invoke(() =>
-                {
-                    videoView1.MediaPlayer.Stop();
-                });
             }
-
-            //释放
-            videoView1.MediaPlayer?.Dispose();
-
-            media?.Dispose();
-
-            libvlc?.Dispose();
-
-            Opener?.Show();
         }
+
+        #endregion
     }
 }
