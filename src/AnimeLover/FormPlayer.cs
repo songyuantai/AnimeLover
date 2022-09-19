@@ -32,6 +32,11 @@ namespace AnimeLover
         private Media media;
 
         /// <summary>
+        /// 视频记录
+        /// </summary>
+        private Dictionary<string, Media> medias = new();
+
+        /// <summary>
         /// 动漫信息
         /// </summary>
         private readonly Anime anime;
@@ -84,9 +89,9 @@ namespace AnimeLover
             {
                 SetPlayTime();
 
-                Invoke(() =>
-                {
-                    videoView1.MediaPlayer.Stop();
+                Invoke(() => 
+                { 
+                    videoView1.MediaPlayer.Stop(); 
                 });
             }
 
@@ -98,36 +103,6 @@ namespace AnimeLover
             libvlc?.Dispose();
 
             Opener?.Show();
-        }
-
-        /// <summary>
-        /// 播放停止
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void MediaPlayer_EndReached(object sender, EventArgs e)
-        {
-            var episodeNum = Convert.ToInt32(video.Episode) + 1;
-            var episode = episodeNum.ToString().PadLeft(2, '0');
-            var nextVideo = BlazorApp.Database.Queryable<AnimeVideo>().First(m => m.Episode == episode);
-            if (!string.IsNullOrEmpty(nextVideo?.Episode))
-            {
-                Jump(1);
-            }
-            else
-            {
-                Invoke(() =>
-                {
-                    var total = videoView1.MediaPlayer?.Media?.Duration ?? 0;
-                    var tsAll = TimeSpan.FromMilliseconds(total);
-                    var tsCurrent = TimeSpan.FromMilliseconds(total);
-                    var text = tsCurrent.ToString(@"hh\:mm\:ss") + "/" + tsAll.ToString(@"hh\:mm\:ss");
-
-                    uiLabel1.Text = text;
-
-                    videoTimeTracker.Value = (int)Math.Floor((double)(total * 100 / total));
-                });
-            }
         }
 
         /// <summary>
@@ -145,8 +120,8 @@ namespace AnimeLover
                 var text = tsCurrent.ToString(@"hh\:mm\:ss") + "/" + tsAll.ToString(@"hh\:mm\:ss");
 
                 uiLabel1.Text = text;
+                videoTimeTracker.Value = (int)Math.Round((double)(e.Time * 100 / total));
 
-                videoTimeTracker.Value = (int)Math.Floor((double)(e.Time * 100 / total));
             });
         }
 
@@ -222,7 +197,7 @@ namespace AnimeLover
         private void videoTimeTracker_MouseUp(object sender, MouseEventArgs e)
         {
             var player = videoView1.MediaPlayer;
-            var seconds = Math.Round((double)videoTimeTracker.Value / 100 * (player?.Media?.Duration ?? 0));
+            var seconds = Math.Floor((double)videoTimeTracker.Value / 100 * (player?.Media?.Duration ?? 0));
             var ts = TimeSpan.FromMilliseconds(seconds);
             player?.Pause();
             player?.SeekTo(ts);
@@ -273,11 +248,7 @@ namespace AnimeLover
         /// <param name="e"></param>
         private void ButtonStop_Click(object sender, EventArgs e)
         {
-            Invoke(() =>
-            {
-                videoView1.MediaPlayer.SeekTo(TimeSpan.FromSeconds(0));
-                videoView1.MediaPlayer.Stop();
-            });
+            Stop();
         }
 
         /// <summary>
@@ -360,7 +331,8 @@ namespace AnimeLover
         {
             media = new Media(libvlc, new Uri(video.PhysicalPath));
 
-            videoView1.MediaPlayer = new MediaPlayer(media);
+            videoView1.MediaPlayer = new MediaPlayer(libvlc);
+            videoView1.MediaPlayer.Media = media;
             volumeTracker.Value = videoView1.MediaPlayer.Volume;
             videoView1.MediaPlayer.TimeChanged += OnTimeChange;
             videoView1.MediaPlayer.Paused += (sender, e) =>
@@ -371,7 +343,11 @@ namespace AnimeLover
             {
                 btnPlay.Symbol = 61516;
             };
-            videoView1.MediaPlayer.EndReached += MediaPlayer_EndReached;
+
+            videoView1.MediaPlayer.EndReached += (sender, e) =>
+            {
+                Stop();
+            };
         }
 
         /// <summary>
@@ -383,6 +359,8 @@ namespace AnimeLover
             Text = $"{anime.Name} 第{video.Episode}集";
 
             videoView1.MediaPlayer.Play();
+
+            //小于才跳转
             if (video.LastPlayTime != null)
             {
                 videoView1.MediaPlayer.Pause();
@@ -404,8 +382,10 @@ namespace AnimeLover
         /// <param name="offset"></param>
         private void Jump(int offset)
         {
+
+
             var episodeNum = Convert.ToInt32(video.Episode) + offset;
-            if(episodeNum > 0)
+            if (episodeNum > 0)
             {
                 var episode = episodeNum.ToString().PadLeft(2, '0');
 
@@ -413,20 +393,19 @@ namespace AnimeLover
 
                 if (!string.IsNullOrEmpty(nextVideo?.PhysicalPath))
                 {
+                    Stop();
+
                     SetPlayTime();
 
-                    Invoke(() =>
-                    {
-                        videoView1.MediaPlayer.Stop();
-                        var oldMedia = videoView1.MediaPlayer.Media;
+                    var old = media;
 
-                        video = nextVideo;
-                        var newMedia = new Media(libvlc, new Uri(video.PhysicalPath));
-                        videoView1.MediaPlayer.Media = newMedia;
-                        oldMedia?.Dispose();
-                        oldMedia = null;
-                        PlayWithRecord();
-                    });
+                    video = nextVideo;
+
+                    videoView1.MediaPlayer.Media = new Media(libvlc, new Uri(video.PhysicalPath));
+
+                    old?.Dispose();
+
+                    PlayWithRecord();
                 }
             }
         }
@@ -471,9 +450,37 @@ namespace AnimeLover
             if(videoView1.MediaPlayer.Time > 0)
             {
                 var time = TimeSpan.FromMilliseconds(videoView1.MediaPlayer.Time);
-                video.LastPlayTime = time;
+
+                if(videoView1.MediaPlayer.Time == videoView1.MediaPlayer.Media?.Duration)
+                {
+                    video.LastPlayTime = null;
+                }
+                else
+                {
+                    video.LastPlayTime = time;
+                }
                 BlazorApp.Database.Updateable(video).ExecuteCommand();
             }
+        }
+
+        /// <summary>
+        /// 安全地停止播放
+        /// </summary>
+        private void Stop()
+        {
+            Invoke(() =>
+            {
+                btnPlay.Symbol = 61515;
+                videoTimeTracker.Value = 0;
+            });
+
+            ThreadPool.QueueUserWorkItem(StopProc);
+        }
+
+        private void StopProc(Object stateInfo) 
+        {
+            //corrupt
+            videoView1.MediaPlayer.Stop();
         }
 
         #endregion
