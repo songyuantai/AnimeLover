@@ -42,5 +42,10 @@ namespace AnimeLover.Model
         /// 关键字
         /// </summary>
         public string Keyword { get; set; }
+
+        /// <summary>
+        /// 是否订阅
+        /// </summary>
+        public bool Subscribed { get; set; }
     }
 }

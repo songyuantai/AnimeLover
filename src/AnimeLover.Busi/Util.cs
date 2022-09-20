@@ -47,7 +47,7 @@ namespace AnimeLover.Busi
 
         public static string GetSimpleName(string fullName)
         {
-            return fullName?.Length > 18 ? string.Concat(fullName.AsSpan(0, 16), "....") : fullName;
+            return fullName?.Length > 24 ? string.Concat(fullName.AsSpan(0, 22), "....") : fullName;
         }
 
         [SupportedOSPlatform("windows")]

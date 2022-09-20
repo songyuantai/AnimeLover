@@ -32,11 +32,6 @@ namespace AnimeLover
         private Media media;
 
         /// <summary>
-        /// 视频记录
-        /// </summary>
-        private Dictionary<string, Media> medias = new();
-
-        /// <summary>
         /// 动漫信息
         /// </summary>
         private readonly Anime anime;

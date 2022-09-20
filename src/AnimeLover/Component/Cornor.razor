@@ -10,25 +10,32 @@
 </div>
 <Modal @ref="modalRef">
     <ModalContent Centered Size="ModalSize.ExtraLarge">
-        <ModalHeader>
-            <ModalTitle>新番</ModalTitle>
-            <CloseButton />
-        </ModalHeader>
         <ModalBody>
             <div class="row">
                 @foreach(var animie in SeasonAnimes)
                 {
                     <div class="col-lg-4 col-sm-12 p-1">
-                        <div class="card">
+                        <div class="card border-primary">
                             <div class="card-body">
-                                <p class="card-title" title="@animie.Name">
+                                <p class="card-title text-primary" title="@animie.Name">
                                     @(Util.GetSimpleName(animie.Name))
-                                    <span class="card-text text-danger text-sm">@animie.DayOfWeekText</span></p>
+                                </p>
+                                <div class="d-flex justify-content-between align-items-baseline">
 
-                                <div class="input-group mt-3">
-                                    <input type="text" class="form-control" placeholder="关键字..." @bind="@animie.Keyword">
-                                    <Button Class="btn btn-outline-success" @onclick="@(e => Subscribe(animie))">
-                                        订阅</Button>
+                                    @if (animie.Subscribed)
+                                    {
+                                        <button class="btn btn-outline-primary" @onclick="@(e => UnSubAnime(animie))">
+                                            <i class="fa fa-star"></i> 已订阅
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-outline-primary" @onclick="@(e => SubAnime(animie))">
+                                            <i class="fa fa-star-o"></i> 订阅
+                                        </button>
+                                    }
+
+                                    <span class="card-text text-sm text-danger">@animie.DayOfWeekText</span>
                                 </div>
 
                             </div>
@@ -37,11 +44,33 @@
                 }
             </div>
         </ModalBody>
-        <ModalFooter>
-            <Button Class="btn btn-success" @onclick="@(e => GetSeasonAnimies())">获取</Button>
+        <ModalFooter Class="justify-content-center">
+            <Button Class="btn btn-primary mr-2" @onclick="@GetSeasonAnimies">更新</Button>
+            <Button Class="btn btn-secondary ml-2" @onclick="@HideModal">关闭</Button>
         </ModalFooter>
     </ModalContent>
 </Modal>
+<Modal @ref="frameModal">
+    <ModalContent Centered Size="ModalSize.ExtraLarge">
+        <ModalBody Style="padding:0 !important;">
+            <iframe src="@Uri" width="1138" height="680" scrolling="auto" frameborder="0">
+            </iframe>
+        </ModalBody>
+        <ModalFooter Class="justify-content-between">
+            <div></div>
+            <div class="input-group" style="width:40%;">
+                <input type="text" class="form-control" placeholder="请复制粘贴关键字.." @bind-value="@keyword">
+                <Button Class="btn btn-outline-primary" Clicked="@Save">
+                    保存
+                </Button>
+            </div>
+            <Button Class="btn btn-outline-secondary" Clicked="@Back">
+                返回
+            </Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+
 @code {
 
     private Modal modalRef;
@@ -61,7 +90,7 @@
                         .ToList();
     }
 
-    
+
     protected List<SeasonAnime> SeasonAnimes { get; set; }
 
     private Task ShowModal()
@@ -74,42 +103,75 @@
         return modalRef.Hide();
     }
 
-    private async Task Subscribe(SeasonAnime view)
+    /// <summary>
+    /// 订阅新番
+    /// </summary>
+    /// <param name="seasonAnime"></param>
+    /// <returns></returns>
+    private async Task SubAnime(SeasonAnime seasonAnime)
     {
-        var db = BlazorApp.Database;
-
-        var anime = db.Queryable<Anime>().First(m => m.Name == view.Name);
-        if(null == anime)
-        {
-            anime = new Anime
-            {
-                Name = view.Name,
-                PhysicalPath = Path.Combine(BlazorApp.Config.Addr, view.Name),
-                Season = Util.GetCurrentSeason(),
-                Description =string.Empty,
-                CoverName = string.Empty,
-                DateOfWeek = view.DayOfWeek,
-                Keyword = view.Keyword,
-                SearchEngine = Busi.SearchEngine.ComitCat,
-                CreatedDate = DateTime.Now
-            };
-
-            db.Insertable(anime).ExecuteCommandIdentityIntoEntity();
-
-            if (!System.IO.Directory.Exists(anime.PhysicalPath))
-            {
-                System.IO.Directory.CreateDirectory(anime.PhysicalPath);
-            }
-
-            StateHasChanged();
-
-            await MessageService.Success("番剧订阅成功！");
-        }
-        else
+        if (seasonAnime.Subscribed)
         {
             await MessageService.Warning("番剧已订阅！");
         }
+        else
+        {
+            var db = BlazorApp.Database;
+            var subedAnime = db.Queryable<Anime>().First(m => m.Name == seasonAnime.Name);
+            if(null != subedAnime)
+            {
+                seasonAnime.Subscribed = true;
+                db.Updateable(seasonAnime).ExecuteCommand();
+                StateHasChanged();
+                await MessageService.Warning("番剧已订阅！");
+            }
+            else
+            {
+                SeasonAnime = seasonAnime;
+                Uri = SearchEngine.ComitCat + "/search.php?keyword=" + seasonAnime.Keyword.Replace(" ", "+");
+                await modalRef.Hide();
+                await frameModal.Show();
+            }
+        }
+    }
 
+    /// <summary>
+    /// 取消订阅
+    /// </summary>
+    /// <param name="seasonAnime"></param>
+    /// <returns></returns>
+    private async Task UnSubAnime(SeasonAnime seasonAnime)
+    {
+        if (!seasonAnime.Subscribed)
+        {
+            await MessageService.Warning("番剧尚未订阅！");
+        }
+        else
+        {
+            var isConfirm = await MessageService.Confirm("确定要退订此番剧吗！");
+            if(isConfirm)
+            {
+                var db = BlazorApp.Database;
+                db.BeginTran();
+
+                seasonAnime.Subscribed = false;
+                db.Updateable(seasonAnime).ExecuteCommand();
+
+                var anime = db.Queryable<Anime>().First(m => m.Name == seasonAnime.Name);
+                if(null != anime)
+                {
+                    db.Deleteable(anime).ExecuteCommand();
+
+                    db.Deleteable<AnimeVideo>().Where(m => m.AnimeId == anime.Id).ExecuteCommand();
+                }
+
+                db.CommitTran();
+                db.RollbackTran();
+
+                await MessageService.Success("退订成功，请手动删除下载文件！");
+                OnAnimeSubChanged?.Invoke();
+            }
+        }
     }
 
     /// <summary>
@@ -129,7 +191,7 @@
         await MessageService.Success("新番更新！");
     }
 
-    
+
     private bool HiddenToTop = true;
 
     private void OnScroll(int yValue)
@@ -150,5 +212,58 @@
         await jsRuntime.InvokeAsync<string>("scrollToTop");
     }
 
+    private Modal frameModal;
 
+    private string Uri { get; set; }
+
+    private SeasonAnime SeasonAnime { get; set; }
+
+    private string keyword;
+
+    private async Task Save()
+    {
+        if (string.IsNullOrEmpty(keyword))
+        {
+            await MessageService.Warning("关键字不能为空！");
+            return;
+        }
+
+        var db = BlazorApp.Database;
+        var anime = new Anime
+        {
+            Name = SeasonAnime.Name,
+            PhysicalPath = Path.Combine(BlazorApp.Config.Addr, SeasonAnime.Name),
+            Season = Util.GetCurrentSeason(),
+            Description =string.Empty,
+            CoverName = string.Empty,
+            DateOfWeek = SeasonAnime.DayOfWeek,
+            Keyword = keyword,
+            SearchEngine = Busi.SearchEngine.ComitCat,
+            CreatedDate = DateTime.Now
+        };
+
+        db.Insertable(anime).ExecuteCommandIdentityIntoEntity();
+
+        if (!System.IO.Directory.Exists(anime.PhysicalPath))
+        {
+            System.IO.Directory.CreateDirectory(anime.PhysicalPath);
+        }
+
+        await MessageService.Success("番剧订阅成功！");
+
+        SeasonAnime.Subscribed = true;
+        db.Updateable(SeasonAnime);
+        Back();
+        OnAnimeSubChanged?.Invoke();
+    }
+
+    private void Back()
+    {
+        frameModal.Hide();
+        modalRef.Show();
+    }
+
+    public delegate void SubChanged();
+
+    public static event SubChanged OnAnimeSubChanged;
 }

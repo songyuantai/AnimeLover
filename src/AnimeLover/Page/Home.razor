@@ -19,12 +19,21 @@
 
     protected override void OnInitialized()
     {
-        var db = BlazorApp.Database;
-
-        Animes = db.Queryable<Anime>()
+        Animes = BlazorApp.Database.Queryable<Anime>()
                    .OrderBy(nameof(Anime.CreatedDate))
                    .ToList();
 
+        //订阅
+        Cornor.OnAnimeSubChanged -= AnimeUpdated;
+        Cornor.OnAnimeSubChanged += AnimeUpdated;
+    }
+
+    private void AnimeUpdated()
+    {
+        Animes = BlazorApp.Database.Queryable<Anime>()
+            .OrderBy(nameof(Anime.CreatedDate))
+            .ToList();
+        StateHasChanged();
     }
 
     protected List<Anime> Animes { get; set; }
