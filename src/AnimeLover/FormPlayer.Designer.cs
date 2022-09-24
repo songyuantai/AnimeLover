@@ -31,6 +31,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormPlayer));
             this.videoView1 = new LibVLCSharp.WinForms.VideoView();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.selSubtitle = new Sunny.UI.UIComboBox();
+            this.selSoudtrack = new Sunny.UI.UIComboBox();
             this.volumeTracker = new Sunny.UI.UITrackBar();
             this.uiLabel1 = new Sunny.UI.UILabel();
             this.btnFullScreen = new Sunny.UI.UISymbolButton();
@@ -71,6 +73,8 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.selSubtitle);
+            this.splitContainer1.Panel2.Controls.Add(this.selSoudtrack);
             this.splitContainer1.Panel2.Controls.Add(this.volumeTracker);
             this.splitContainer1.Panel2.Controls.Add(this.uiLabel1);
             this.splitContainer1.Panel2.Controls.Add(this.btnFullScreen);
@@ -82,6 +86,40 @@
             this.splitContainer1.Size = new System.Drawing.Size(1344, 821);
             this.splitContainer1.SplitterDistance = 747;
             this.splitContainer1.TabIndex = 1;
+            // 
+            // selSubtitle
+            // 
+            this.selSubtitle.DataSource = null;
+            this.selSubtitle.FillColor = System.Drawing.Color.White;
+            this.selSubtitle.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.selSubtitle.Location = new System.Drawing.Point(280, 29);
+            this.selSubtitle.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.selSubtitle.MinimumSize = new System.Drawing.Size(63, 0);
+            this.selSubtitle.Name = "selSubtitle";
+            this.selSubtitle.Padding = new System.Windows.Forms.Padding(0, 0, 30, 2);
+            this.selSubtitle.Size = new System.Drawing.Size(93, 29);
+            this.selSubtitle.TabIndex = 9;
+            this.selSubtitle.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
+            this.selSubtitle.Watermark = "";
+            this.selSubtitle.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
+            this.selSubtitle.SelectedIndexChanged += new System.EventHandler(this.selSubtitle_SelectedIndexChanged);
+            // 
+            // selSoudtrack
+            // 
+            this.selSoudtrack.DataSource = null;
+            this.selSoudtrack.FillColor = System.Drawing.Color.White;
+            this.selSoudtrack.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.selSoudtrack.Location = new System.Drawing.Point(173, 29);
+            this.selSoudtrack.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.selSoudtrack.MinimumSize = new System.Drawing.Size(63, 0);
+            this.selSoudtrack.Name = "selSoudtrack";
+            this.selSoudtrack.Padding = new System.Windows.Forms.Padding(0, 0, 30, 2);
+            this.selSoudtrack.Size = new System.Drawing.Size(99, 29);
+            this.selSoudtrack.TabIndex = 8;
+            this.selSoudtrack.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
+            this.selSoudtrack.Watermark = "";
+            this.selSoudtrack.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
+            this.selSoudtrack.SelectedIndexChanged += new System.EventHandler(this.selSoudtrack_SelectedIndexChanged);
             // 
             // volumeTracker
             // 
@@ -222,5 +260,7 @@
         private Sunny.UI.UISymbolButton btnPlay;
         private Sunny.UI.UITrackBar videoTimeTracker;
         private Sunny.UI.UITrackBar volumeTracker;
+        private Sunny.UI.UIComboBox selSoudtrack;
+        private Sunny.UI.UIComboBox selSubtitle;
     }
 }

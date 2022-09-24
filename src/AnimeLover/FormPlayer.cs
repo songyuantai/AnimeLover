@@ -18,7 +18,7 @@ namespace AnimeLover
     /// <summary>
     /// 动漫播放器
     /// </summary>
-    public partial class FormPlayer : Form
+    public partial class FormPlayer : Form, IDisposable
     {
         #region 构造函数与参数
         /// <summary>
@@ -80,15 +80,14 @@ namespace AnimeLover
         /// <param name="e"></param>
         private void FormPlayer_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (videoView1.MediaPlayer?.Media?.State == VLCState.Playing)
-            {
-                SetPlayTime();
+            SetPlayTime();
 
-                Invoke(() => 
-                { 
-                    videoView1.MediaPlayer.Stop(); 
-                });
-            }
+            var result = BeginInvoke(() =>
+            {
+                videoView1.MediaPlayer.Pause();
+            });
+
+            EndInvoke(result);
 
             //释放
             videoView1.MediaPlayer?.Dispose();
@@ -107,17 +106,20 @@ namespace AnimeLover
         /// <param name="e"></param>
         private void OnTimeChange(object sender, MediaPlayerTimeChangedEventArgs e)
         {
-            Invoke(() =>
+            if(!this.Disposing)
             {
-                var total = videoView1.MediaPlayer?.Media?.Duration ?? 0;
-                var tsAll = TimeSpan.FromMilliseconds(total);
-                var tsCurrent = TimeSpan.FromMilliseconds(e.Time);
-                var text = tsCurrent.ToString(@"hh\:mm\:ss") + "/" + tsAll.ToString(@"hh\:mm\:ss");
+                BeginInvoke(() =>
+                {
+                    var total = videoView1.MediaPlayer?.Media?.Duration ?? 0;
+                    var tsAll = TimeSpan.FromMilliseconds(total);
+                    var tsCurrent = TimeSpan.FromMilliseconds(e.Time);
+                    var text = tsCurrent.ToString(@"hh\:mm\:ss") + "/" + tsAll.ToString(@"hh\:mm\:ss");
 
-                uiLabel1.Text = text;
-                videoTimeTracker.Value = (int)Math.Round((double)(e.Time * 100 / total));
+                    uiLabel1.Text = text;
+                    videoTimeTracker.Value = (int)Math.Round((double)(e.Time * 100 / total));
 
-            });
+                });
+            }
         }
 
         /// <summary>
@@ -223,7 +225,7 @@ namespace AnimeLover
         /// <param name="e"></param>
         private void ButtonPlay_Click(object sender, EventArgs e)
         {
-            Invoke(() =>
+            BeginInvoke(() =>
             {
                 if (videoView1.MediaPlayer.IsPlaying)
                 {
@@ -253,7 +255,7 @@ namespace AnimeLover
         /// <param name="e"></param>
         private void ButtonMoveForward_Click(object sender, EventArgs e)
         {
-            Invoke(() =>
+            BeginInvoke(() =>
             {
                 if (null != videoView1.MediaPlayer)
                 {
@@ -277,7 +279,7 @@ namespace AnimeLover
         /// <param name="e"></param>
         private void ButtonMoveNext_Click(object sender, EventArgs e)
         {
-            Invoke(() =>
+            BeginInvoke(() =>
             {
                 if (null != videoView1.MediaPlayer)
                 {
@@ -343,6 +345,32 @@ namespace AnimeLover
             {
                 Stop();
             };
+            
+        }
+
+        private void BindCombox()
+        {
+            media.Parse().Wait();
+
+            var sounds = media.Tracks.Where(m => m.TrackType == TrackType.Audio).Select(m => new { m.Id, m.Description }).ToList();
+            selSoudtrack.Visible = sounds.Count > 1;
+            selSoudtrack.ValueMember = "Id";
+            selSoudtrack.DisplayMember = "Description";
+            selSoudtrack.DataSource = sounds;
+            selSoudtrack.SelectedValue = videoView1.MediaPlayer.AudioTrack;
+
+            var subtitles = media.Tracks.Where(m => m.TrackType == TrackType.Text).Select(m => new { m.Id, m.Description }).ToList();
+            selSubtitle.Visible = subtitles.Count > 1;
+            selSubtitle.ValueMember = "Id";
+            selSubtitle.DisplayMember = "Description";
+            selSubtitle.DataSource = subtitles;
+            selSubtitle.SelectedValue = videoView1.MediaPlayer.Spu;
+            var chineseSubtitle = media.Tracks.FirstOrDefault(m => m.TrackType == TrackType.Text && m.Description == "Chinese (Simplified)");
+            if (chineseSubtitle.Id > 0)
+            {
+                videoView1.MediaPlayer.SetSpu(chineseSubtitle.Id);
+                selSubtitle.SelectedValue = chineseSubtitle.Id;
+            }
         }
 
         /// <summary>
@@ -366,6 +394,9 @@ namespace AnimeLover
             {
                 videoView1.MediaPlayer.Play();
             }
+
+            
+            BindCombox();
 
             anime.LastPlayVideo = video.Id;
             BlazorApp.Database.Updateable(anime).ExecuteCommand();
@@ -396,7 +427,9 @@ namespace AnimeLover
 
                     video = nextVideo;
 
-                    videoView1.MediaPlayer.Media = new Media(libvlc, new Uri(video.PhysicalPath));
+                    media = new Media(libvlc, new Uri(video.PhysicalPath));
+
+                    videoView1.MediaPlayer.Media = media;
 
                     old?.Dispose();
 
@@ -463,7 +496,7 @@ namespace AnimeLover
         /// </summary>
         private void Stop()
         {
-            Invoke(() =>
+            BeginInvoke(() =>
             {
                 btnPlay.Symbol = 61515;
                 videoTimeTracker.Value = 0;
@@ -474,10 +507,19 @@ namespace AnimeLover
 
         private void StopProc(Object stateInfo) 
         {
-            //corrupt
             videoView1.MediaPlayer.Stop();
         }
 
         #endregion
+
+        private void selSoudtrack_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            videoView1.MediaPlayer.SetAudioTrack(Convert.ToInt32(selSoudtrack.SelectedValue));
+        }
+
+        private void selSubtitle_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            videoView1.MediaPlayer.SetSpu(Convert.ToInt32(selSubtitle.SelectedValue));
+        }
     }
 }
