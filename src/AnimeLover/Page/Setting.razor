@@ -21,13 +21,12 @@
                     <label>密码</label>
                     <input class="form-control" @bind-value="@SysConfig.QBitPassword" />
                 </div>
-                <div class="text-center pt-4">
-                    <button class="btn btn-primary" @onclick="@Save">
+                <div class="text-center" style="padding-top:40px">
+                    <button class="btn btn-primary" @onclick="@Save" style="margin-right:10px">
                         <span class="fa fa-save"></span>
                         保存
                     </button>
-                    &nbsp;
-                    <button class="btn btn-secondary" type="reset">
+                    <button class="btn btn-secondary ml-2" type="reset" style="margin-left:10px">
                         <span class="fa fa-undo"></span>
                         重置
                     </button>

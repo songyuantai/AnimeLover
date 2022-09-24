@@ -10,12 +10,25 @@
 </div>
 <Modal @ref="modalRef">
     <ModalContent Centered Size="ModalSize.ExtraLarge">
+        <ModalHeader Class="justify-content-between border">
+            <ModalTitle>
+                订阅新番
+            </ModalTitle>
+            <div>
+                <Button Class="btn btn-success mr-2" @onclick="@CreateAnimeManual">
+                    <i class="fa fa-plus"></i>
+                    新增</Button>
+                <Button Class="btn btn-primary mr-2 ml-2" @onclick="@GetSeasonAnimies">
+                    <i class="fa fa-refresh"></i>
+                    更新</Button>
+            </div>
+        </ModalHeader>
         <ModalBody>
             <div class="row">
                 @foreach(var animie in SeasonAnimes)
                 {
                     <div class="col-lg-4 col-sm-12 p-1">
-                        <div class="card border-primary">
+                        <div class="card">
                             <div class="card-body">
                                 <p class="card-title text-primary" title="@animie.Name">
                                     @(Util.GetSimpleName(animie.Name))
@@ -44,10 +57,7 @@
                 }
             </div>
         </ModalBody>
-        <ModalFooter Class="justify-content-center">
-            <Button Class="btn btn-primary mr-2" @onclick="@GetSeasonAnimies">更新</Button>
-            <Button Class="btn btn-secondary ml-2" @onclick="@HideModal">关闭</Button>
-        </ModalFooter>
+
     </ModalContent>
 </Modal>
 <Modal @ref="frameModal">
@@ -70,10 +80,12 @@
         </ModalFooter>
     </ModalContent>
 </Modal>
-
+<AnimeEditor @ref=animeEditor></AnimeEditor>
 @code {
 
     private Modal modalRef;
+
+    private AnimeEditor animeEditor;
 
     [Inject] IMessageService MessageService { get; set; }
 
@@ -266,4 +278,21 @@
     public delegate void SubChanged();
 
     public static event SubChanged OnAnimeSubChanged;
+
+    /// <summary>
+    /// 手动创建
+    /// </summary>
+    /// <returns></returns>
+    private async Task CreateAnimeManual()
+    {
+        await HideModal();
+        await animeEditor.ShowModal();
+        animeEditor.AnimeUpdated -= AnimeManualCreated;
+        animeEditor.AnimeUpdated += AnimeManualCreated;
+    }
+
+    private void AnimeManualCreated(Anime anime)
+    {
+        OnAnimeSubChanged?.Invoke();
+    }
 }

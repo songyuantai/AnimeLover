@@ -1,8 +1,8 @@
 ﻿
 <Modal @ref="modal">
-    <ModalContent Centered Size="ModalSize.ExtraLarge">
+    <ModalContent Centered Size="ModalSize.Large">
         <ModalHeader>
-            <ModalTitle>编辑番剧</ModalTitle>
+            <ModalTitle>@title</ModalTitle>
             <CloseButton />
         </ModalHeader>
         <ModalBody>
@@ -64,6 +64,8 @@
     [Parameter]
     public string PhysicalPath { get; set; }
 
+    private string title => Id > 0 ? "编辑番剧" : "新增番剧";
+
     public delegate void AnimeUpdateHandler(Anime anime);
 
     public event AnimeUpdateHandler AnimeUpdated;
@@ -88,27 +90,61 @@
     /// <returns></returns>
     private async Task Save()
     {
-        var data = BlazorApp.Database.Queryable<Anime>().First(m => m.Id == Id);
-        data.Name = Name;
-        data.Keyword = Keyword;
-        data.Season = Season;
-        var oldPath = data.PhysicalPath;
-        data.PhysicalPath = PhysicalPath;
-
-        var success = BlazorApp.Database.Updateable(data).ExecuteCommand() > 0;
-        if (success)
+        if(Id > 0)
         {
-            if(oldPath != data.PhysicalPath)
-                Directory.Move(oldPath, data.PhysicalPath);
-            await MessageService.Success("保存成功！");
-            await HideModal();
+            var data = BlazorApp.Database.Queryable<Anime>().First(m => m.Id == Id);
+            data.Name = Name;
+            data.Keyword = Keyword;
+            data.Season = Season;
+            var oldPath = data.PhysicalPath;
+            data.PhysicalPath = PhysicalPath;
 
-            AnimeUpdated(data);
+            var success = BlazorApp.Database.Updateable(data).ExecuteCommand() > 0;
+            if (success)
+            {
+                if(oldPath != data.PhysicalPath)
+                    Directory.Move(oldPath, data.PhysicalPath);
+                await MessageService.Success("保存成功！");
+                await HideModal();
+
+                AnimeUpdated(data);
+            }
+            else
+            {
+                await MessageService.Error("保存失败，请检查！");
+            }
         }
         else
         {
-            await MessageService.Error("保存失败，请检查！");
+            var model = new Anime
+            {
+                Name = Name,
+                Keyword = Keyword,
+                Season = Season,
+                PhysicalPath = PhysicalPath,
+                CreatedDate = DateTime.Now,
+                SearchEngine = SearchEngine.ComitCat,
+            };
+
+            if (!Directory.Exists(PhysicalPath))
+            {
+                Directory.CreateDirectory(PhysicalPath);
+            }
+
+            var success = BlazorApp.Database.Insertable(model).ExecuteCommandIdentityIntoEntity();
+            if (success)
+            {
+                await MessageService.Success("新增成功！");
+                await HideModal();
+
+                AnimeUpdated(model);
+            }
+            else
+            {
+                await MessageService.Error("新增失败，请检查！");
+            }
         }
+
         
     }
 }

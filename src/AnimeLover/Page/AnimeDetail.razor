@@ -66,6 +66,12 @@
                         </button>
                     </li>
                     <li class="nav-item mr-2">
+                        <button class="btn btn-info" @onclick="@San" disabled="@scanDisabled">
+                            <i class="@ScanIcon"></i>
+                            扫描
+                        </button>
+                    </li>
+                    <li class="nav-item mr-2">
                         <button class="btn btn-success" @onclick="@Pull" disabled="@pullDisabled">
                             <i class="@PullIcon"></i>
                             获取
@@ -182,7 +188,7 @@
                            .OrderBy(m => m.Episode)
                            .ToList();
 
-            
+
         }
     }
 
@@ -208,6 +214,65 @@
 
         PullIcon = "fa fa-cog";
         pullDisabled = false;
+        StateHasChanged();
+    }
+
+    public string ScanIcon { get; set; } = "fa fa-spinner";
+
+    private bool scanDisabled = false;
+
+    /// <summary>
+    /// 扫描番剧视频
+    /// </summary>
+    private void San()
+    {
+        ScanIcon = "fa fa-spinner fa-pulse fa-fw";
+        scanDisabled = true;
+
+        if (Directory.Exists(_anime.PhysicalPath))
+        {
+            var files = Directory.GetFiles(_anime.PhysicalPath).Where(m => Path.GetExtension(m).ToLower()!= ".torrent");
+            for(var i = 1; i <= 50; i++)
+            {
+                var episode = i.ToString().PadLeft(2, '0');
+                var file = files.FirstOrDefault(m => m.Contains($"[{episode}]"));
+                if(null != file)
+                {
+                    var video = _videoList.FirstOrDefault(v => v.Episode == episode);
+                    if(null != video)
+                    {
+                        if(string.IsNullOrEmpty(video.PhysicalPath))
+                        {
+                            video.PhysicalPath = file;
+                            BlazorApp.Database.Updateable(video).ExecuteCommand();
+                        }
+                    }
+                    else
+                    {
+                        video = new AnimeVideo
+                        {
+                            AnimeId = _anime.Id,
+                            Episode = episode,
+                            CreatedDate = DateTime.Now,
+                            Name = Path.GetFileNameWithoutExtension(file),
+                            OriginUrl = string.Empty,
+                            MagnetLink = string.Empty,
+                            PhysicalPath = file
+                        };
+
+                        BlazorApp.Database.Insertable(video).ExecuteCommandIdentityIntoEntity();
+                    }
+                }
+            }
+        }
+
+        _videoList = BlazorApp.Database.Queryable<AnimeVideo>()
+                .Where(m => m.AnimeId == Id)
+                .OrderBy(m => m.Episode)
+                .ToList();
+
+        ScanIcon = "fa fa-spinner";
+        scanDisabled = false;
         StateHasChanged();
     }
 
