@@ -224,10 +224,11 @@
     /// <summary>
     /// 扫描番剧视频
     /// </summary>
-    private void San()
+    private async void San()
     {
         ScanIcon = "fa fa-spinner fa-pulse fa-fw";
         scanDisabled = true;
+        StateHasChanged();
 
         if (Directory.Exists(_anime.PhysicalPath))
         {
@@ -244,7 +245,7 @@
                         if(string.IsNullOrEmpty(video.PhysicalPath))
                         {
                             video.PhysicalPath = file;
-                            BlazorApp.Database.Updateable(video).ExecuteCommand();
+                            await BlazorApp.Database.Updateable(video).ExecuteCommandAsync();
                         }
                     }
                     else
@@ -260,16 +261,16 @@
                             PhysicalPath = file
                         };
 
-                        BlazorApp.Database.Insertable(video).ExecuteCommandIdentityIntoEntity();
+                        await BlazorApp.Database.Insertable(video).ExecuteCommandIdentityIntoEntityAsync();
                     }
                 }
             }
         }
 
-        _videoList = BlazorApp.Database.Queryable<AnimeVideo>()
+        _videoList = await BlazorApp.Database.Queryable<AnimeVideo>()
                 .Where(m => m.AnimeId == Id)
                 .OrderBy(m => m.Episode)
-                .ToList();
+                .ToListAsync();
 
         ScanIcon = "fa fa-spinner";
         scanDisabled = false;

@@ -5,7 +5,7 @@
              Background="Background.Dark"
              ThemeContrast="ThemeContrast.Dark">
             <a class="navbar-brand" href="/">
-                Anime Lover
+                首页
             </a>
             <BarMenu>
                 <BarStart>
@@ -15,15 +15,27 @@
                 </BarStart>
                 <BarEnd>
                     <BarItem>
-                        <BarLink To="setting">设置</BarLink>
+                        <BarLink To="javascript:;" @onclick="@setting.ShowModal">设置</BarLink>
                     </BarItem>
                 </BarEnd>
             </BarMenu>
         </Bar>
     </LayoutHeader>
     <LayoutContent>
+        <Alert Color="Color.Warning" Visible="!setting.SysInited">
+            <AlertMessage>警告</AlertMessage>
+            <AlertDescription>系统尚未进行初始化配置，<a href="javascript:;" @onclick="@setting.ShowModal">点击这里</a>进行配置！</AlertDescription>
+        </Alert>
         @Body
         <Cornor />
     </LayoutContent>
 </Layout>
+<Setting @ref="setting" OnSave="SettingSaved"></Setting>
+@code {
+    Setting setting;
 
+    private void SettingSaved()
+    {
+        this.StateHasChanged();
+    }
+}

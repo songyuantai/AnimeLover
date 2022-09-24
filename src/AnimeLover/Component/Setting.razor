@@ -1,8 +1,10 @@
-﻿@page "/setting"
-
-<div class="container">
-    <div class="row">
-        <div class="col-sm-12 col-md-8 offset-md-2 pt-4">
+﻿<Modal @ref="modal">
+    <ModalContent Centered Size="ModalSize.Large">
+        <ModalHeader>
+            <ModalTitle>系统设置</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
             <form>
                 <input type="hidden" @bind-value="@SysConfig.ConfigId" />
                 <div class="form-group">
@@ -21,31 +23,32 @@
                     <label>密码</label>
                     <input class="form-control" @bind-value="@SysConfig.QBitPassword" />
                 </div>
-                <div class="text-center" style="padding-top:40px">
-                    <button class="btn btn-primary" @onclick="@Save" style="margin-right:10px">
-                        <span class="fa fa-save"></span>
-                        保存
-                    </button>
-                    <button class="btn btn-secondary ml-2" type="reset" style="margin-left:10px">
-                        <span class="fa fa-undo"></span>
-                        重置
-                    </button>
-                </div>
             </form>
-        </div>
-    </div>
-</div>
+        </ModalBody>
+        <ModalFooter Class="justify-content-center">
+            <Button Class="btn btn-primary" Clicked="@Save">
+                保存
+            </Button>
+            <Button Class="btn btn-secondary" Clicked="@HideModal">
+                关闭
+            </Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
 
 @code {
+    private Modal modal;
 
-    protected SysConfig SysConfig { get; set; }
+    private SysConfig SysConfig { get; set; }
+
+    public bool SysInited => SysConfig?.ConfigId > 0;
 
     protected override void OnInitialized()
     {
         SysConfig = BlazorApp.Config ?? new SysConfig();
     }
 
-    protected void Save()
+    protected async Task Save()
     {
         var client = BlazorApp.Database;
         if (SysConfig.ConfigId > 0)
@@ -54,9 +57,24 @@
         }
         else
         {
-            client.Insertable(SysConfig).ExecuteCommand();
+            client.Insertable(SysConfig).ExecuteCommandIdentityIntoEntity();
         }
 
         BlazorApp.Config = SysConfig;
+        await HideModal();
+        await OnSave.InvokeAsync();
     }
+
+    public Task ShowModal()
+    {
+        return modal.Show();
+    }
+
+    public Task HideModal()
+    {
+        return modal.Hide();
+    }
+
+    [Parameter]
+    public EventCallback OnSave { get; set; }
 }

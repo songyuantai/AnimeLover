@@ -1,11 +1,11 @@
 ﻿@using AnimeLover.Event
 @inject IJSRuntime jsRuntime
 <div class="cornor">
-    <button class="btn btn-outline-success rounded-circle" @onclick="ShowModal">
-        <span class="fa fa-plus"></span>
+    <button class="btn btn-outline-success rounded-circle" @onclick="ShowModal" title="订阅新番">
+        <Icon Name="IconName.Add"></Icon>
     </button>
-    <button class="btn btn-outline-success rounded-circle" hidden="@HiddenToTop" @onclick="ScrollTop">
-        <span class="fa fa-arrow-circle-up"></span>
+    <button class="btn btn-outline-success rounded-circle" hidden="@HiddenToTop" @onclick="ScrollTop" title="跳转顶部">
+        <Icon Name="IconName.ArrowUp"></Icon>
     </button>
 </div>
 <Modal @ref="modalRef">
@@ -16,11 +16,11 @@
             </ModalTitle>
             <div>
                 <Button Class="btn btn-success mr-2" @onclick="@CreateAnimeManual">
-                    <i class="fa fa-plus"></i>
+                    <Icon Name="IconName.Add"></Icon>
                     新增</Button>
                 <Button Class="btn btn-primary mr-2 ml-2" @onclick="@GetSeasonAnimies">
-                    <i class="fa fa-refresh"></i>
-                    更新</Button>
+                    <Icon Name="IconName.Rss"></Icon>
+                    获取</Button>
             </div>
         </ModalHeader>
         <ModalBody>
@@ -38,13 +38,13 @@
                                     @if (animie.Subscribed)
                                     {
                                         <button class="btn btn-outline-primary" @onclick="@(e => UnSubAnime(animie))">
-                                            <i class="fa fa-star"></i> 已订阅
+                                            <Icon Name="IconName.Star" IconStyle="IconStyle.Solid"></Icon> 已订阅
                                         </button>
                                     }
                                     else
                                     {
                                         <button class="btn btn-outline-primary" @onclick="@(e => SubAnime(animie))">
-                                            <i class="fa fa-star-o"></i> 订阅
+                                            <Icon Name="IconName.Star" IconStyle="IconStyle.Regular"></Icon> 订阅
                                         </button>
                                     }
 
