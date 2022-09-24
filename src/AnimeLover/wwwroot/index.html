@@ -54,6 +54,17 @@
             document.body.scrollTop = document.documentElement.scrollTop = 0;
         }
 
+        $(function () {
+            $(window).mousedown(function (e) {
+                var ev = window.event || e;
+                var button = ev.button;
+                if ($(ev.target).is('main') && button === 0) {
+                    var x = ev.clientX;
+                    var y = ev.clientY;
+                    DotNet.invokeMethodAsync('AnimeLover', 'MouseDown', button, x, y);
+                }
+            });
+        });
     </script>
 </body>
 

@@ -10,6 +10,9 @@ using AnimeLover.Page;
 using AnimeLover.Busi;
 using AnimeLover.Model;
 using LibVLCSharp.Shared;
+using System.Runtime.InteropServices;
+using Microsoft.Web.WebView2.WinForms;
+using Microsoft.Web.WebView2.Wpf;
 
 namespace AnimeLover
 {
@@ -47,6 +50,8 @@ namespace AnimeLover
             DbManager.Merge();
             var lib = Path.Combine(AppContext.BaseDirectory, "vlclib");
             Core.Initialize(lib);
+
+            MouseControl.LayoutMouseDown += C_MouseDown;
         }
 
         private System.Windows.Forms.Form player;
@@ -64,6 +69,18 @@ namespace AnimeLover
         {
             Environment.Exit(0);
         }
-        
+
+        [DllImport("user32.dll")]
+        public static extern bool ReleaseCapture();
+
+        [DllImport("user32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+
+
+        private void C_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            ReleaseCapture();
+            SendMessage(Handle, 274, 61440 + 9, 0);
+        }
     }
 }

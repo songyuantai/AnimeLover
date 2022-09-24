@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿@using AnimeLover.Event
+@inherits LayoutComponentBase
 <Layout>
     <LayoutHeader>
         <Bar Breakpoint="Breakpoint.Desktop"
@@ -12,10 +13,26 @@
                     <BarItem>
                         <BarLink To="netdisk">浏览</BarLink>
                     </BarItem>
+                    <BarItem>
+                        <BarLink To="javascript:;" @onclick="@setting.ShowModal">设置</BarLink>
+                    </BarItem>
+
                 </BarStart>
                 <BarEnd>
                     <BarItem>
-                        <BarLink To="javascript:;" @onclick="@setting.ShowModal">设置</BarLink>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <button class="btn btn-secondary" type="button" id="button-addon2">
+                                    <Icon Name="IconName.Search"></Icon>
+                                </button>
+                            </div>
+                            <input type="text" class="form-control" placeholder="输入关键字以搜索...">
+                        </div>
+                    </BarItem>
+                    <BarItem Class="ml-4">
+                        <BarLink To="javascript:;" @onclick="@Close">
+                            <Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.PowerOff"></Icon>
+                        </BarLink>
                     </BarItem>
                 </BarEnd>
             </BarMenu>
@@ -37,5 +54,11 @@
     private void SettingSaved()
     {
         this.StateHasChanged();
+
+    }
+
+    private void Close()
+    {
+        Environment.Exit(0);
     }
 }
