@@ -58,7 +58,7 @@
             $(window).mousedown(function (e) {
                 var ev = window.event || e;
                 var button = ev.button;
-                if ($(ev.target).is('main') && button === 0) {
+                if ($(ev.target).is('main') || $(ev.target).is('.navbar-collapse')) {
                     var x = ev.clientX;
                     var y = ev.clientY;
                     DotNet.invokeMethodAsync('AnimeLover', 'MouseDown', button, x, y);

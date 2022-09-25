@@ -1,10 +1,10 @@
 ﻿@using AnimeLover.Event
 @inject IJSRuntime jsRuntime
 <div class="cornor">
-    <button class="btn btn-outline-success rounded-circle" @onclick="ShowModal" title="订阅新番">
+    <button class="btn btn-outline-primary rounded-circle" @onclick="ShowModal" title="订阅新番">
         <Icon Name="IconName.Add"></Icon>
     </button>
-    <button class="btn btn-outline-success rounded-circle" hidden="@HiddenToTop" @onclick="ScrollTop" title="跳转顶部">
+    <button class="btn btn-outline-primary rounded-circle" hidden="@HiddenToTop" @onclick="ScrollTop" title="跳转顶部">
         <Icon Name="IconName.ArrowUp"></Icon>
     </button>
 </div>
@@ -15,15 +15,16 @@
                 订阅新番
             </ModalTitle>
             <div>
-                <Button Class="btn btn-success mr-2" @onclick="@CreateAnimeManual">
+                <Button Class="btn btn-primary mr-2" @onclick="@CreateAnimeManual">
                     <Icon Name="IconName.Add"></Icon>
                     新增</Button>
-                <Button Class="btn btn-primary mr-2 ml-2" @onclick="@GetSeasonAnimies">
+                <Button Class="btn btn-secondary mr-2 ml-2" @onclick="@GetSeasonAnimies">
                     <Icon Name="IconName.Rss"></Icon>
                     获取</Button>
             </div>
         </ModalHeader>
         <ModalBody>
+            <NothingToDisplay Display="@(SeasonAnimes.Count == 0)"></NothingToDisplay>
             <div class="row">
                 @foreach(var animie in SeasonAnimes)
                 {

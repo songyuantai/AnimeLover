@@ -1,0 +1,16 @@
+﻿<p hidden="@(!Display)" class="text-center">@Message</p>
+
+@code {
+    [Parameter]
+    public bool Display { get; set; }
+
+    [Parameter]
+    public string Message { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if(string.IsNullOrEmpty(Message)) {
+            Message = "这里空空如也...";
+        }
+    }
+}

@@ -1,4 +1,5 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
+﻿<Blazorise.ThemeProvider Theme="@theme">
+<Router AppAssembly="@typeof(App).Assembly">
 	<Found Context="routeData">
 		<RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
 	</Found>
@@ -9,3 +10,29 @@
 	</NotFound>
 </Router>
 <MessageAlert />
+</Blazorise.ThemeProvider>
+
+@code{
+	private const string PrimrayColor = "#00796B";
+	private const string SecondaryColor = "#6A1B9A";
+	private Theme theme = new Theme
+	{
+		LuminanceThreshold = 255,
+		BackgroundOptions = new ThemeBackgroundOptions
+		{
+			Primary = PrimrayColor
+		},
+		TextColorOptions = new ThemeTextColorOptions
+		{
+			Primary = PrimrayColor,
+			Warning = "#333333",
+			
+		},
+
+		ColorOptions = new ThemeColorOptions
+		{
+			Primary = PrimrayColor,
+			Secondary = SecondaryColor
+		}
+    };
+}

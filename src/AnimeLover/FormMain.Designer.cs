@@ -34,11 +34,11 @@
             // 
             // webview
             // 
-            this.webview.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(58)))), ((int)(((byte)(64)))));
+            this.webview.BackColor = System.Drawing.SystemColors.Control;
             this.webview.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.webview.Location = new System.Drawing.Point(0, 0);
+            this.webview.Location = new System.Drawing.Point(1, 1);
             this.webview.Name = "webview";
-            this.webview.Size = new System.Drawing.Size(1344, 821);
+            this.webview.Size = new System.Drawing.Size(1342, 819);
             this.webview.TabIndex = 0;
             this.webview.Text = "blazorWebView1";
             // 
@@ -46,14 +46,17 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(58)))), ((int)(((byte)(64)))));
+            this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(1344, 821);
             this.ControlBox = false;
             this.Controls.Add(this.webview);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FormMain";
+            this.Padding = new System.Windows.Forms.Padding(1);
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormMain_FormClosed);
+            this.Paint += new System.Windows.Forms.PaintEventHandler(this.webview_Paint);
             this.ResumeLayout(false);
 
         }
