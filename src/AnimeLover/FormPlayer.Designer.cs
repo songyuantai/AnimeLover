@@ -90,6 +90,7 @@
             // selSubtitle
             // 
             this.selSubtitle.DataSource = null;
+            this.selSubtitle.DisplayMember = "Name";
             this.selSubtitle.FillColor = System.Drawing.Color.White;
             this.selSubtitle.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.selSubtitle.Location = new System.Drawing.Point(280, 29);
@@ -100,6 +101,7 @@
             this.selSubtitle.Size = new System.Drawing.Size(93, 29);
             this.selSubtitle.TabIndex = 9;
             this.selSubtitle.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
+            this.selSubtitle.ValueMember = "Id";
             this.selSubtitle.Watermark = "";
             this.selSubtitle.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
             this.selSubtitle.SelectedIndexChanged += new System.EventHandler(this.selSubtitle_SelectedIndexChanged);
@@ -107,6 +109,7 @@
             // selSoudtrack
             // 
             this.selSoudtrack.DataSource = null;
+            this.selSoudtrack.DisplayMember = "Name";
             this.selSoudtrack.FillColor = System.Drawing.Color.White;
             this.selSoudtrack.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.selSoudtrack.Location = new System.Drawing.Point(173, 29);
@@ -117,6 +120,7 @@
             this.selSoudtrack.Size = new System.Drawing.Size(99, 29);
             this.selSoudtrack.TabIndex = 8;
             this.selSoudtrack.TextAlignment = System.Drawing.ContentAlignment.MiddleLeft;
+            this.selSoudtrack.ValueMember = "Id";
             this.selSoudtrack.Watermark = "";
             this.selSoudtrack.ZoomScaleRect = new System.Drawing.Rectangle(0, 0, 0, 0);
             this.selSoudtrack.SelectedIndexChanged += new System.EventHandler(this.selSoudtrack_SelectedIndexChanged);

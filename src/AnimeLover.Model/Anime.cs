@@ -13,26 +13,26 @@ namespace AnimeLover.Model
         [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public string PhysicalPath { get; set; }
+        public string PhysicalPath { get; set; } = string.Empty;
 
         public int DateOfWeek { get; set; }
 
         [SugarColumn(IsNullable = true)]
         public byte[] Cover { get; set; }
 
-        public string CoverName { get; set; }
+        public string CoverName { get; set; } = string.Empty;
 
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         public int Total { get; set; }
 
-        public string Season { get; set; }
+        public string Season { get; set; } = string.Empty;
 
-        public string SearchEngine { get; set; }
+        public string SearchEngine { get; set; } = string.Empty;
 
-        public string Keyword { get; set; }
+        public string Keyword { get; set; } = string.Empty;
 
         public DateTime CreatedDate { get; set; }
 

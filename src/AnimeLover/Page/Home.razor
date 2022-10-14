@@ -7,7 +7,7 @@
         {
             <div class="col p-1">
                 <div class="card" @onclick="@((e) => ShowAnime(animie.Id))">
-                    <img src="@Util.GetPictureUri(animie.Cover)" class="card-img-top" alt="@animie.Name" style="height:208px; width:auto;margin:0 auto;">
+                    <img src="@Util.GetPictureUri(animie.Cover)" class="card-img-top" alt="@animie.Name" >
                     <div class="card-body text-center" style="padding:8px !important">
                         <span class="card-title">@animie.Name</span>
                     </div>

@@ -13,6 +13,7 @@ using LibVLCSharp.Shared;
 using System.Runtime.InteropServices;
 using Microsoft.Web.WebView2.WinForms;
 using Microsoft.Web.WebView2.Wpf;
+using System.Runtime.CompilerServices;
 
 namespace AnimeLover
 {
@@ -52,6 +53,8 @@ namespace AnimeLover
             Core.Initialize(lib);
 
             MouseControl.LayoutMouseDown += C_MouseDown;
+
+            (this.Width, this.Height) = Tool.GetFitRect(this);
         }
 
         private System.Windows.Forms.Form player;

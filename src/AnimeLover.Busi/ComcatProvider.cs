@@ -4,6 +4,7 @@ using AngleSharp.Html.Dom;
 using AngleSharp.Io;
 using AngleSharp.Media;
 using AnimeLover.Model;
+using MySqlX.XDevAPI.Relational;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,7 +121,7 @@ namespace AnimeLover.Busi
                     continue;
                 }
 
-                var key = keyword + $"+{txtEpisode}";
+                var key = keyword + $"+[{txtEpisode}]";
                 var url = SearchEngine.ComitCat + "/search.php?keyword=" + key;
                 var document = await context.OpenAsync(url);
                 var rows = document.QuerySelectorAll("#listTable>tbody>tr");
@@ -129,8 +130,19 @@ namespace AnimeLover.Busi
                 if (rows.Length > 0 && tdCount > 1)
                 {
                     //至少集数完全匹配
-                    var row = rows.FirstOrDefault(row => row.QuerySelector("td:nth-child(3) > a").TextContent.Contains(txtEpisode));
-                    if (null == row)
+                    var rowList = rows.Where(row => row.QuerySelector("td:nth-child(3) > a").TextContent.Contains(txtEpisode)).ToList();
+                    if (rowList.Count == 0)
+                        break;
+                    
+                    //去掉合集
+                    if(rowList.Count > 1)
+                    {
+                        rowList = rowList.Where(m => !m.QuerySelector("td:nth-child(3) > a").TextContent.Contains("合集")).ToList();
+                    }
+
+                    //取最后一个
+                    var row = rowList.LastOrDefault();
+                    if (row == null)
                         break;
 
                     var anchor = row.QuerySelector("td:nth-child(3) > a") as IHtmlAnchorElement;

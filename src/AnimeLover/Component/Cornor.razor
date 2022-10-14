@@ -15,7 +15,13 @@
                 订阅新番
             </ModalTitle>
             <div>
-                <Button Class="btn btn-primary mr-2" @onclick="@CreateAnimeManual">
+                <Select Class="form-control mr-2" SelectedValue="@SelectedSeason" SelectedValueChanged="@SeasonValueChanged" TValue="string" Style="width:100px">
+                    @foreach(var kv in OptionsProvider.GetAnimeSeasons())
+                    {
+                        <SelectItem Value="kv.Value">@kv.Key</SelectItem>
+                    }
+                </Select>
+                <Button Class="btn btn-primary mr-2 ml-2" @onclick="@CreateAnimeManual">
                     <Icon Name="IconName.Add"></Icon>
                     新增</Button>
                 <Button Class="btn btn-secondary mr-2 ml-2" @onclick="@GetSeasonAnimies">
@@ -64,16 +70,18 @@
 <Modal @ref="frameModal">
     <ModalContent Centered Size="ModalSize.ExtraLarge">
         <ModalBody Style="padding:0 !important;">
-            <iframe src="@Uri" width="1138" height="680" scrolling="auto" frameborder="0">
+            <iframe src="@Uri" style="width:100%; height:calc(100vh - 120px)" scrolling="auto" frameborder="0">
             </iframe>
         </ModalBody>
         <ModalFooter Class="justify-content-between">
             <div></div>
             <div class="input-group" style="width:40%;">
                 <input type="text" class="form-control" placeholder="请复制粘贴关键字.." @bind-value="@keyword">
-                <Button Class="btn btn-outline-primary" Clicked="@Save">
-                    保存
-                </Button>
+                <div class="input-group-append">
+                    <Button Class="btn btn-outline-primary" Clicked="@Save">
+                        保存
+                    </Button>
+                </div>
             </div>
             <Button Class="btn btn-outline-secondary" Clicked="@Back">
                 返回
@@ -90,19 +98,30 @@
 
     [Inject] IMessageService MessageService { get; set; }
 
+    private string SelectedSeason { get; set; }
+
     protected override void OnInitialized()
     {
         ScrollControl.ScrollEvent += OnScroll;
         var db = BlazorApp.Database;
 
-        var season = Util.GetCurrentSeason();
-        SeasonAnimes = db.Queryable<SeasonAnime>()
-                        .OrderBy(nameof(SeasonAnime.DayOfWeek))
-                        .OrderBy(nameof(SeasonAnime.SeasonAnimeId))
-                        .Where(m => m.Season == season)
-                        .ToList();
+        SeasonValueChanged(Util.GetCurrentSeason());
     }
 
+    private void SeasonValueChanged(string value)
+    {
+        SelectedSeason = value;
+        BindSeasonAnimes();
+    }
+
+    private void BindSeasonAnimes() {
+
+        SeasonAnimes = BlazorApp.Database.Queryable<SeasonAnime>()
+            .OrderBy(nameof(SeasonAnime.DayOfWeek))
+            .OrderBy(nameof(SeasonAnime.SeasonAnimeId))
+            .Where(m => m.Season == SelectedSeason)
+            .ToList();
+    }
 
     protected List<SeasonAnime> SeasonAnimes { get; set; }
 
@@ -198,10 +217,11 @@
             if(!SeasonAnimes.Any(m => m.Season == seasonAnime.Season && m.Name == seasonAnime.Name))
             {
                 BlazorApp.Database.Insertable(seasonAnime).ExecuteCommandIdentityIntoEntity();
-                SeasonAnimes.Add(seasonAnime);
             }
         }
-        await MessageService.Success("新番更新！");
+
+        BindSeasonAnimes();
+        await MessageService.Success("新番已更新！");
     }
 
 

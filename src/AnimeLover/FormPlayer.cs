@@ -69,6 +69,7 @@ namespace AnimeLover
         /// <param name="e"></param>
         private void FormPlayer_Load(object sender, EventArgs e)
         {
+            (this.Width, this.Height) = Tool.GetFitRect(this);
             InitPlayer();
             PlayWithRecord();
         }
@@ -110,6 +111,11 @@ namespace AnimeLover
             {
                 BeginInvoke(() =>
                 {
+                    if (videoView1.MediaPlayer.IsPlaying && btnPlay.Symbol != 61516)
+                    {
+                        btnPlay.Symbol = 61516;
+                    }
+
                     var total = videoView1.MediaPlayer?.Media?.Duration ?? 0;
                     var tsAll = TimeSpan.FromMilliseconds(total);
                     var tsCurrent = TimeSpan.FromMilliseconds(e.Time);
@@ -352,17 +358,15 @@ namespace AnimeLover
         {
             media.Parse().Wait();
 
-            var sounds = media.Tracks.Where(m => m.TrackType == TrackType.Audio).Select(m => new { m.Id, m.Description }).ToList();
+            var sounds = media.Tracks.Where(m => m.TrackType == TrackType.Audio).Select(m => new TrackInfo { Id = m.Id, Name = m.Description}).ToList();
             selSoudtrack.Visible = sounds.Count > 1;
-            selSoudtrack.ValueMember = "Id";
-            selSoudtrack.DisplayMember = "Description";
+            selSoudtrack.Clear();
             selSoudtrack.DataSource = sounds;
             selSoudtrack.SelectedValue = videoView1.MediaPlayer.AudioTrack;
 
-            var subtitles = media.Tracks.Where(m => m.TrackType == TrackType.Text).Select(m => new { m.Id, m.Description }).ToList();
+            var subtitles = media.Tracks.Where(m => m.TrackType == TrackType.Text).Select(m => new TrackInfo { Id = m.Id, Name = m.Description }).ToList();
             selSubtitle.Visible = subtitles.Count > 1;
-            selSubtitle.ValueMember = "Id";
-            selSubtitle.DisplayMember = "Description";
+            selSubtitle.Clear();
             selSubtitle.DataSource = subtitles;
             selSubtitle.SelectedValue = videoView1.MediaPlayer.Spu;
             var chineseSubtitle = media.Tracks.FirstOrDefault(m => m.TrackType == TrackType.Text && m.Description == "Chinese (Simplified)");
@@ -371,6 +375,7 @@ namespace AnimeLover
                 videoView1.MediaPlayer.SetSpu(chineseSubtitle.Id);
                 selSubtitle.SelectedValue = chineseSubtitle.Id;
             }
+
         }
 
         /// <summary>
@@ -395,7 +400,8 @@ namespace AnimeLover
                 videoView1.MediaPlayer.Play();
             }
 
-            
+            //btnPlay.Symbol = 61516;
+
             BindCombox();
 
             anime.LastPlayVideo = video.Id;
@@ -409,13 +415,12 @@ namespace AnimeLover
         private void Jump(int offset)
         {
 
-
             var episodeNum = Convert.ToInt32(video.Episode) + offset;
             if (episodeNum > 0)
             {
                 var episode = episodeNum.ToString().PadLeft(2, '0');
 
-                var nextVideo = BlazorApp.Database.Queryable<AnimeVideo>().First(m => m.Episode == episode);
+                var nextVideo = BlazorApp.Database.Queryable<AnimeVideo>().First(m => m.Episode == episode && m.AnimeId == anime.Id);
 
                 if (!string.IsNullOrEmpty(nextVideo?.PhysicalPath))
                 {
@@ -514,12 +519,27 @@ namespace AnimeLover
 
         private void selSoudtrack_SelectedIndexChanged(object sender, EventArgs e)
         {
-            videoView1.MediaPlayer.SetAudioTrack(Convert.ToInt32(selSoudtrack.SelectedValue));
+            var value = Convert.ToInt32(selSoudtrack.SelectedValue);
+            if(value > 0)
+            {
+                videoView1.MediaPlayer.SetAudioTrack(value);
+            }
         }
 
         private void selSubtitle_SelectedIndexChanged(object sender, EventArgs e)
         {
-            videoView1.MediaPlayer.SetSpu(Convert.ToInt32(selSubtitle.SelectedValue));
+            var value = Convert.ToInt32(selSubtitle.SelectedValue);
+            if(value > 0)
+            {
+                videoView1.MediaPlayer.SetSpu(value);
+            }
         }
+    }
+
+    public class TrackInfo
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
     }
 }

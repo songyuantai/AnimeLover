@@ -1,7 +1,7 @@
 ﻿@using AnimeLover.Event
 @inherits LayoutComponentBase
 <Layout>
-    <LayoutHeader>
+    <LayoutHeader Fixed>
         <Bar Breakpoint="Breakpoint.Desktop"
              Background="Background.Primary"
              ThemeContrast="ThemeContrast.Dark">
@@ -38,15 +38,21 @@
             </BarMenu>
         </Bar>
     </LayoutHeader>
-    <LayoutContent>
-        <Alert Color="Color.Warning" Visible="!setting.SysInited">
-            <AlertMessage>警告</AlertMessage>
-            <AlertDescription>系统尚未进行初始化配置，<a href="javascript:;" @onclick="@setting.ShowModal">点击这里</a>进行配置！</AlertDescription>
-        </Alert>
-        @Body
-        <Cornor />
-    </LayoutContent>
+    <Layout Sider>
+        <Layout style="margin-top:50px;">
+            <LayoutContent>
+                <Alert Color="Color.Warning" Visible="!setting.SysInited">
+                    <AlertMessage>警告</AlertMessage>
+                    <AlertDescription>系统尚未进行初始化配置，<a href="javascript:;" @onclick="@setting.ShowModal">点击这里</a>进行配置！</AlertDescription>
+                </Alert>
+                @Body
+                <Cornor />
+            </LayoutContent>
+        </Layout>
+
+    </Layout>
 </Layout>
+
 <Setting @ref="setting" OnSave="SettingSaved"></Setting>
 @code {
     Setting setting;

@@ -54,6 +54,7 @@ namespace AnimeLover.Model
         /// <summary>
         /// 上次播放时间
         /// </summary>
+        [SugarColumn(IsNullable = true)]
         public TimeSpan? LastPlayTime { get; set; }
     }
 }
