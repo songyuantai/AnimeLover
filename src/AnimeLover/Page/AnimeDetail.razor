@@ -60,6 +60,12 @@
                         </select>
                     </li>
                     <li class="nav-item mr-2">
+                        <button class="btn btn-primary" @onclick="DownloadAll">
+                            <i class="fa fa-download"></i>
+                            全部下载
+                        </button>
+                    </li>
+                    <li class="nav-item mr-2">
                         <button class="btn btn-warning" @onclick="EditAnime">
                             <i class="fa fa-edit"></i>
                             编辑
@@ -125,6 +131,31 @@
     private List<AnimeVideo> _videoList;
 
     private string downloader = DownloadProvider.QBitTorrent;
+
+    private async void DownloadAll()
+    {
+        var path = Path.Combine(BlazorApp.Config.Addr, _anime.Name);
+        var files = Directory.GetFiles(path);
+        foreach(var video in _videoList)
+        {
+            if(string.IsNullOrEmpty(video.PhysicalPath))
+            {
+                if (files.Length == 0 || !files.Any(f => f.Contains($"[{video.Episode}]")))
+                {
+                    if (downloader == DownloadProvider.QBitTorrent)
+                    {
+                        await QBitTorrentApi.Download(video.MagnetLink, path);
+                    }
+                    else if (downloader == DownloadProvider.Thounder)
+                    {
+                        await jsRuntime.InvokeAsync<string>("ThounderDownload", video.MagnetLink);
+                    }
+                }
+            }
+        }
+
+        await MessageService.Success("下载任务已全部添加！");
+    }
 
     private async void Play(AnimeVideo video)
     {
