@@ -1,5 +1,6 @@
 ﻿@using AnimeLover.Event
 @inherits LayoutComponentBase
+@inject NavigationManager navigationManager
 <Layout>
     <LayoutHeader Fixed>
         <Bar Breakpoint="Breakpoint.Desktop"
@@ -22,11 +23,11 @@
                     <BarItem>
                         <div class="input-group">
                             <div class="input-group-prepend">
-                                <button class="btn btn-secondary" type="button" id="button-addon2">
+                                <button class="btn btn-secondary" type="button" @onclick="@Search">
                                     <Icon Name="IconName.Search"></Icon>
                                 </button>
                             </div>
-                            <input type="text" class="form-control" placeholder="输入关键字以搜索...">
+                            <input type="text" @bind-value="@Keyword" class="form-control" placeholder="输入关键字以搜索..." @onkeyup="@InputKeyUp">
                         </div>
                     </BarItem>
                     <BarItem Class="ml-4">
@@ -60,11 +61,25 @@
     private void SettingSaved()
     {
         this.StateHasChanged();
-
     }
 
     private void Close()
     {
         Environment.Exit(0);
+    }
+
+    private void InputKeyUp(KeyboardEventArgs e)
+    {
+        if(e.Key == "Enter")
+        {
+            Search();
+        }
+    }
+
+    private string Keyword { get; set; }
+
+    private void Search()
+    {
+        navigationManager.NavigateTo("/home/"+ Keyword);
     }
 }

@@ -1,4 +1,5 @@
 ﻿@page "/"
+@page "/home/{Keyword?}"
 @inject NavigationManager navigationManager
 <NothingToDisplay Display="@(Animes.Count == 0)"></NothingToDisplay>
 <div class="container">
@@ -18,24 +19,35 @@
 </div>
 
 @code {
-
-
     protected override void OnInitialized()
     {
-        Animes = BlazorApp.Database.Queryable<Anime>()
-                   .OrderBy(nameof(Anime.CreatedDate))
-                   .ToList();
-
-        //订阅
         Cornor.OnAnimeSubChanged -= AnimeUpdated;
         Cornor.OnAnimeSubChanged += AnimeUpdated;
     }
 
+    private void RefreshAnimies()
+    {
+        var querier = BlazorApp.Database.Queryable<Anime>();
+        if (!string.IsNullOrEmpty(Keyword))
+        {
+            querier.Where(m => m.Name.Contains(Keyword));
+        }
+        Animes = querier
+                    .OrderBy(nameof(Anime.CreatedDate))
+                    .ToList();
+    }
+
+    protected override void OnParametersSet()
+    {
+        RefreshAnimies();
+    }
+
+    [Parameter]
+    public string Keyword { get; set; }
+
     private void AnimeUpdated()
     {
-        Animes = BlazorApp.Database.Queryable<Anime>()
-            .OrderBy(nameof(Anime.CreatedDate))
-            .ToList();
+        RefreshAnimies();
         StateHasChanged();
     }
 
