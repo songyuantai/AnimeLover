@@ -173,7 +173,8 @@ namespace AnimeLover.Busi
                         Name = name,
                         OriginUrl = href,
                         MagnetLink = link,
-                        PhysicalPath = string.Empty
+                        PhysicalPath = string.Empty,
+                        LastPlayTime = TimeSpan.Zero,
                     };
 
                     await db.Insertable(video).ExecuteCommandIdentityIntoEntityAsync();
