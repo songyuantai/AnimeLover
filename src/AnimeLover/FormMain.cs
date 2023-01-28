@@ -73,15 +73,28 @@ namespace AnimeLover
             player.Show();
         }
 
-        private void Toggle()
+        private void Toggle(bool? isFull)
         {
-            if(this.WindowState == FormWindowState.Maximized)
+            if (isFull == true)
+            {
+                this.WindowState = FormWindowState.Maximized;
+            }
+
+            if (isFull == false)
             {
                 this.WindowState = FormWindowState.Normal;
             }
-            else
+
+            if (null == isFull)
             {
-                this.WindowState = FormWindowState.Maximized;
+                if (this.WindowState == FormWindowState.Maximized)
+                {
+                    this.WindowState = FormWindowState.Normal;
+                }
+                else
+                {
+                    this.WindowState = FormWindowState.Maximized;
+                }
             }
         }
 
@@ -110,7 +123,8 @@ namespace AnimeLover
 
         private void webview_Paint(object sender, PaintEventArgs e)
         {
-            Pen p = new(System.Drawing.Color.FromArgb(200, 0, 121, 107));
+            //Pen p = new(System.Drawing.Color.FromArgb(200, 0, 121, 107));
+            Pen p = new(System.Drawing.Color.FromArgb(220, 0, 0, 0));
             e.Graphics.DrawRectangle(p, 0f, 0f, this.Width - 0.5f, this.Height - 0.5f);
         }
 

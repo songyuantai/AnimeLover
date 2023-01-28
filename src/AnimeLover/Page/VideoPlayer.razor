@@ -3,7 +3,15 @@
 @using Blazorise.Video
 @implements IDisposable
 <div style="max-height:calc(100vh-80px); width: 95%; margin:5px auto;">
-    <Video @ref="@video" Source="@Source" AutoPlay="true" StreamingLibrary="StreamingLibrary.Dash" style="max-height:100%; max-width:100%;" AutomaticallyHideControls="true" />
+    <Video @ref="@video" 
+        Source="@Source" 
+        AutoPlay="true"
+        StreamingLibrary="StreamingLibrary.Dash" 
+        AutomaticallyHideControls="true"
+        Ratio="16:9"
+        FullScreenEntered="@OnFullScreen"
+        FullScreenExited="@OnExitFullScreen"
+        style="max-height:100%; max-width:100%;" />
 </div>
 <div style="text-align:right;padding-right:2.5%">
     <a href="/netdisk/" title="返回...">
@@ -20,6 +28,18 @@
     protected override void OnInitialized()
     {
         SysControl.Display(false);
+    }
+
+    private Task OnFullScreen()
+    {
+        SysControl.FullScreenChange(true);
+        return Task.CompletedTask;
+    }
+
+    private Task OnExitFullScreen()
+    {
+        SysControl.FullScreenChange(false);
+        return Task.CompletedTask;
     }
 
     public void Dispose()

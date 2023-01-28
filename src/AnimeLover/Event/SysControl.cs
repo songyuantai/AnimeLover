@@ -19,13 +19,13 @@ namespace AnimeLover.Event
             OnCornorDisplayChanged?.Invoke(display);
         }
 
-        public delegate void FullScreenToggle();
+        public delegate void FullScreenToggle(bool? isFull);
 
         public static event FullScreenToggle OnFullScreenToggle;
 
-        public static void FullScreenChange()
+        public static void FullScreenChange(bool? isFull = null)
         {
-            OnFullScreenToggle?.Invoke();
+            OnFullScreenToggle?.Invoke(isFull);
         }
     }
 }
