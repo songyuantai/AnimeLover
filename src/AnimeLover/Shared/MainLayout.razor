@@ -31,6 +31,13 @@
                         </div>
                     </BarItem>
                     <BarItem Class="ml-4">
+                        <BarLink To="javascript:;" @onclick="@FullScreen">
+                            <Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.WindowMaximize"></Icon>
+                        </BarLink>
+                    </BarItem>
+
+                    <BarItem Class="ml-4">
+
                         <BarLink To="javascript:;" @onclick="@Close">
                             <Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.PowerOff"></Icon>
                         </BarLink>
@@ -47,7 +54,7 @@
                     <AlertDescription>系统尚未进行初始化配置，<a href="javascript:;" @onclick="@setting.ShowModal">点击这里</a>进行配置！</AlertDescription>
                 </Alert>
                 @Body
-                <Cornor />
+                <Cornor @ref=cornor />
             </LayoutContent>
         </Layout>
 
@@ -56,12 +63,27 @@
 
 <Setting @ref="setting" OnSave="SettingSaved"></Setting>
 @code {
+
+    protected override void OnInitialized()
+    {
+        SysControl.OnCornorDisplayChanged -= OnCornorChanged;
+        SysControl.OnCornorDisplayChanged += OnCornorChanged;
+    }
+
+    Cornor cornor;
+    private void OnCornorChanged(bool display)
+    {
+        cornor.Display(display);
+    } 
+
     Setting setting;
 
     private void SettingSaved()
     {
         this.StateHasChanged();
     }
+
+    public bool CornorHiden { get; set; } = false;
 
     private void Close()
     {
@@ -81,5 +103,10 @@
     private void Search()
     {
         navigationManager.NavigateTo("/home/"+ Keyword);
+    }
+
+    private void FullScreen()
+    {
+        SysControl.FullScreenChange();
     }
 }

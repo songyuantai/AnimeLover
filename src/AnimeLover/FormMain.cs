@@ -55,6 +55,10 @@ namespace AnimeLover
             MouseControl.LayoutMouseDown += C_MouseDown;
 
             (this.Width, this.Height) = Tool.GetFitRect(this);
+
+            SelftHostHelper.Start();
+
+            SysControl.OnFullScreenToggle += Toggle;
         }
 
         private System.Windows.Forms.Form player;
@@ -66,6 +70,18 @@ namespace AnimeLover
             };
             Hide();
             player.Show();
+        }
+
+        private void Toggle()
+        {
+            if(this.WindowState == FormWindowState.Maximized)
+            {
+                this.WindowState = FormWindowState.Normal;
+            }
+            else
+            {
+                this.WindowState = FormWindowState.Maximized;
+            }
         }
 
         private void FormMain_FormClosed(object sender, FormClosedEventArgs e)

@@ -54,5 +54,7 @@ namespace AnimeLover.Busi
                 _database = value;
             }
         }
+
+        //public static FileExtensionContentTypeProvider ContentTypeProvider => new FileExtensionContentTypeProvider();
     }
 }

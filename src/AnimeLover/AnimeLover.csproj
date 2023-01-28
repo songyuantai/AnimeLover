@@ -10,7 +10,9 @@
     <ApplicationIcon>app.ico</ApplicationIcon>
     <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
-
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App"></FrameworkReference>
+	</ItemGroup>
   <ItemGroup>
     <Compile Remove="wwwroot\lib\font-awesome-4.7.0\**" />
     <Content Remove="wwwroot\lib\font-awesome-4.7.0\**" />
@@ -1514,10 +1516,11 @@
 
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.17.1" />
-    <PackageReference Include="Blazorise.Bootstrap" Version="1.0.6" />
-    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.0.6" />
+    <PackageReference Include="Blazorise.Bootstrap" Version="1.1.6" />
+    <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.1.6" />
+    <PackageReference Include="Blazorise.Video" Version="1.1.6" />
     <PackageReference Include="LibVLCSharp.WinForms" Version="3.6.6" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="6.0.486" />
     <PackageReference Include="QBittorrent.Client" Version="1.8.22216.3" />
     <PackageReference Include="SqlSugarCore" Version="5.1.2.3" />

@@ -27,5 +27,7 @@ namespace AnimeLover.Event
             PlayEvent += handler;
         }
 
+
+
     }
 }

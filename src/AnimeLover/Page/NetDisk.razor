@@ -1,5 +1,86 @@
-﻿@page "/netdisk"
+﻿@page "/netdisk/"
+@using System.Web;
+@inject NavigationManager navigationManager
+
+<div class="container-fluid">
+    <div class="row mb-1 mt-1">
+        <div class="col-12">
+            <div class="form-group">
+                <div class="input-group">
+                    <input class="form-control" type="text" name="path" @bind-value="@FsTool.Path" placeholder="请输入地址..." @onkeydown="@KeyDown" />
+                    <span class="input-group-append">
+                        <button type="button" class="btn btn-primary" @onclick="@GetFiles">加载</button>
+                    </span>
+                </div>
+            </div>
+            <div class="list-group">
+                @foreach (var file in FsItems)
+                {
+                    <a asp-action="Download" asp-route-id="@file.Guid" class="list-group-item list-group-item-action text-primary" @onclick="@(() => GotoFile(file))" style="cursor:pointer">
+                        @if (file.IsFile)
+                        {
+                            <Icon Name="@("fa-file")" IconStyle="IconStyle.Solid"></Icon>
+                        }
+                        else
+                        {
+                            <Icon Name="IconName.Folder" IconStyle="IconStyle.Solid"></Icon>
+                        }
+                        &nbsp;@file.Name
+                    </a>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
 
 @code {
+
+    private List<FsItem> FsItems;
+
+    protected override void OnInitialized()
+    {
+        GetFiles();
+    }
+
+    private void GetFiles()
+    {
+        FsItems = FsTool.GetFsItems();
+        StateHasChanged();
+    }
+
+    private void GotoFile(FsItem item)
+    {
+        if (!item.IsFile)
+        {
+            FsTool.Path = item.Path;
+            GetFiles();
+        }
+        else if (isVideo(item.Path))
+        {
+            //navigationManager.NavigateTo("/player/" + HttpUtility.UrlEncode(item.Path));
+            navigationManager.NavigateTo("/player/" + HttpUtility.UrlEncode("http://127.0.0.1:9900/api/home/video?src=" + item.Path));
+        }
+    }
+
+    private bool isVideo(string fileName)
+    {
+        var extension = System.IO.Path.GetExtension(fileName).ToUpper();
+        var extensions = new string[] { ".MP4", ".FLV", ".AVI", ".MOV", ".WMV", ".TS", ".MKV" };
+        return extensions.Contains(extension);
+    }
+
+    private void KeyDown(KeyboardEventArgs keyboardEvent)
+    {
+        if (keyboardEvent.Code == "Enter" || keyboardEvent.Code == "NumpadEnter")
+        {
+            GetFiles();
+        }
+    }
+
 
 }

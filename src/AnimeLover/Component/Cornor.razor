@@ -1,6 +1,6 @@
 ﻿@using AnimeLover.Event
 @inject IJSRuntime jsRuntime
-<div class="cornor">
+<div class="cornor" hidden="@Hidden">
     <button class="btn btn-outline-primary rounded-circle" @onclick="ShowModal" title="订阅新番">
         <Icon Name="IconName.Add"></Icon>
     </button>
@@ -316,4 +316,12 @@
     {
         OnAnimeSubChanged?.Invoke();
     }
+
+    public void Display(bool display)
+    {
+        Hidden = !display;
+        StateHasChanged();
+    }
+
+    public bool Hidden { get; set; } = false;
 }
