@@ -34,5 +34,10 @@ namespace AnimeLover.Model
         /// </summary>
         public string QBitPassword { get; set; }
 
+        /// <summary>
+        /// 浏览地址
+        /// </summary>
+        public string LatestLocation { get; set;}
+
     }
 }

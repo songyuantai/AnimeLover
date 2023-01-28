@@ -7,17 +7,17 @@
              Background="Background.Primary"
              ThemeContrast="ThemeContrast.Dark">
             <a class="navbar-brand" href="/">
-                首页
+                <img src="/images/app.ico" style="width:26px;"/>
+                AiFan
             </a>
             <BarMenu>
                 <BarStart>
-                    <BarItem>
-                        <BarLink To="netdisk">浏览</BarLink>
+                    <BarItem Class="ml-4">
+                        <BarLink To="/">番剧</BarLink>
                     </BarItem>
-                    <BarItem>
-                        <BarLink To="javascript:;" @onclick="@setting.ShowModal">设置</BarLink>
+                    <BarItem Class="ml-4">
+                        <BarLink To="netdisk">文件</BarLink>
                     </BarItem>
-
                 </BarStart>
                 <BarEnd>
                     <BarItem>
@@ -30,13 +30,18 @@
                             <input type="text" @bind-value="@Keyword" class="form-control" placeholder="输入关键字以搜索..." @onkeyup="@InputKeyUp">
                         </div>
                     </BarItem>
-                    <BarItem Class="ml-4">
+                    <BarItem Class="ml-3">
+                        <BarLink To="javascript:;" @onclick="@setting.ShowModal">
+                            <Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.Cog"></Icon>
+                        </BarLink>
+                    </BarItem>
+                    <BarItem Class="ml-3">
                         <BarLink To="javascript:;" @onclick="@FullScreen">
                             <Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.WindowMaximize"></Icon>
                         </BarLink>
                     </BarItem>
 
-                    <BarItem Class="ml-4">
+                    <BarItem Class="ml-3">
 
                         <BarLink To="javascript:;" @onclick="@Close">
                             <Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.PowerOff"></Icon>
@@ -50,7 +55,7 @@
         <Layout style="margin-top:50px;">
             <LayoutContent>
                 <Alert Color="Color.Warning" Visible="!setting.SysInited">
-                    <AlertMessage>警告</AlertMessage>
+                    <MessageProvider>警告</MessageProvider>
                     <AlertDescription>系统尚未进行初始化配置，<a href="javascript:;" @onclick="@setting.ShowModal">点击这里</a>进行配置！</AlertDescription>
                 </Alert>
                 @Body
@@ -87,6 +92,12 @@
 
     private void Close()
     {
+        //关闭前保存浏览地址
+        if (null != BlazorApp.Config)
+        {
+            BlazorApp.Config.LatestLocation = FsTool.Path;
+            BlazorApp.Database.Updateable(BlazorApp.Config).ExecuteCommand();
+        }
         Environment.Exit(0);
     }
 

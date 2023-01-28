@@ -3,30 +3,55 @@
 @inject NavigationManager navigationManager
 
 <div class="container-fluid">
-    <div class="row mb-1 mt-1">
+    <div class="row mb-1 mt-3">
         <div class="col-12">
             <div class="form-group">
-                <div class="input-group">
-                    <input class="form-control" type="text" name="path" @bind-value="@FsTool.Path" placeholder="请输入地址..." @onkeydown="@KeyDown" />
-                    <span class="input-group-append">
-                        <button type="button" class="btn btn-primary" @onclick="@GetFiles">加载</button>
-                    </span>
+                <div class="d-flex justify-content-between">
+                    <div>
+                        @foreach(var drive in DriveInfo.GetDrives())
+                        {
+                            <button type="button" class="btn btn-outline-success mr-1" @onclick="(() => GotoDrive(drive))" style="width:80px;">
+                                @drive.Name.Replace(@":\", "盘")
+                            </button>
+                        }
+                    </div>
+                    <div class="input-group" style="width:35%;">
+                        <input class="form-control" type="text" name="path" @bind-value="@FsTool.Path" placeholder="请输入地址..." @onkeydown="@KeyDown" />
+                        <span class="input-group-append">
+                            <button type="button" class="btn btn-primary" @onclick="@GetFiles">加载</button>
+                        </span>
+                    </div>
                 </div>
+
             </div>
-            <div class="list-group">
+            <div class="list-group" style="height: calc(100vh - 150px); overflow-y:auto">
                 @foreach (var file in FsItems)
                 {
-                    <a asp-action="Download" asp-route-id="@file.Guid" class="list-group-item list-group-item-action text-primary" @onclick="@(() => GotoFile(file))" style="cursor:pointer">
-                        @if (file.IsFile)
-                        {
-                            <Icon Name="@("fa-file")" IconStyle="IconStyle.Solid"></Icon>
-                        }
-                        else
-                        {
-                            <Icon Name="IconName.Folder" IconStyle="IconStyle.Solid"></Icon>
-                        }
-                        &nbsp;@file.Name
-                    </a>
+                    <li class="list-group-item list-group-item-action text-primary d-flex justify-content-between" @onclick="@(() => OpenDir(file))" style="cursor:pointer">
+                        <div>
+                            @if (file.IsFile)
+                            {
+                                <Icon Name="@("fa-file")" IconStyle="IconStyle.Solid"></Icon>
+                            }
+                            else
+                            {
+                                <Icon Name="IconName.Folder" IconStyle="IconStyle.Solid"></Icon>
+                            }
+                            &nbsp;@file.Name
+                        </div>
+                        <div>
+
+                            @if (file.IsFile && isVideo(file.Path))
+                            {
+                                <a class="mr-3" @onclick="@(() => PlayFile(file))" @onclick:stopPropagation="true">
+                                    <Icon Name="@("fa-duotone fa-lg fa-play")" IconStyle="IconStyle.Solid"></Icon>
+                                </a>
+                            }
+                            <a @onclick="@(() => FormMain.OpenPath(file.Path))" @onclick:stopPropagation="true">
+                                <Icon Name="@("fa-duotone fa-lg fa-folder-open")" IconStyle="IconStyle.Solid"></Icon>
+                            </a>
+                        </div>
+                    </li>
                 }
 
             </div>
@@ -53,16 +78,26 @@
         StateHasChanged();
     }
 
-    private void GotoFile(FsItem item)
+    private void OpenDir(FsItem item)
     {
         if (!item.IsFile)
         {
             FsTool.Path = item.Path;
             GetFiles();
-        }
-        else if (isVideo(item.Path))
+        } else if (isVideo(item.Path))
         {
-            //navigationManager.NavigateTo("/player/" + HttpUtility.UrlEncode(item.Path));
+            PlayFile(item);
+        }
+        else
+        {
+            FormMain.OpenPath(item.Path);
+        }
+    }
+
+    private void PlayFile(FsItem item)
+    {
+        if (isVideo(item.Path))
+        {
             navigationManager.NavigateTo("/player/" + HttpUtility.UrlEncode("http://127.0.0.1:9900/api/home/video?src=" + item.Path));
         }
     }
@@ -70,8 +105,14 @@
     private bool isVideo(string fileName)
     {
         var extension = System.IO.Path.GetExtension(fileName).ToUpper();
-        var extensions = new string[] { ".MP4", ".FLV", ".AVI", ".MOV", ".WMV", ".TS", ".MKV" };
+        var extensions = new string[] { ".MP4", ".FLV", ".AVI", ".MOV", ".WMV", ".MKV" };
         return extensions.Contains(extension);
+    }
+
+    private void GotoDrive(DriveInfo drive)
+    {
+        FsTool.Path = drive.RootDirectory.ToString();
+        GetFiles();
     }
 
     private void KeyDown(KeyboardEventArgs keyboardEvent)

@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Web.WebView2.WinForms;
 using Microsoft.Web.WebView2.Wpf;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 namespace AnimeLover
 {
@@ -109,9 +110,22 @@ namespace AnimeLover
 
         private void webview_Paint(object sender, PaintEventArgs e)
         {
-            var p = new Pen(System.Drawing.Color.FromArgb(0, 121, 107));
-            //Pen p = new Pen(System.Drawing.Color.FromArgb(109, 155, 241));
-            e.Graphics.DrawRectangle(p, 0, 0, this.Width - 1, this.Height - 1);
+            Pen p = new(System.Drawing.Color.FromArgb(200, 0, 121, 107));
+            e.Graphics.DrawRectangle(p, 0f, 0f, this.Width - 0.5f, this.Height - 0.5f);
+        }
+
+        private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            
+        }
+
+        public static void OpenPath(string path)
+        {
+            var processStartInfo = new ProcessStartInfo(path);
+            Process process = new Process();
+            process.StartInfo = processStartInfo;
+            process.StartInfo.UseShellExecute = true;
+            process.Start();
         }
     }
 }

@@ -55,6 +55,7 @@
             this.Name = "FormMain";
             this.Padding = new System.Windows.Forms.Padding(1);
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormMain_FormClosed);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.webview_Paint);
             this.ResumeLayout(false);

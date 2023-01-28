@@ -2,13 +2,12 @@
 @using AnimeLover.Event;
 @using Blazorise.Video
 @implements IDisposable
-<div style="max-height:calc(100vh-80px); width: 95%; margin:15px auto 10px auto;">
-    <Video @ref="@video" Source="@Source" StreamingLibrary="StreamingLibrary.Dash" style="max-height:100%; max-width:100%;" />
+<div style="max-height:calc(100vh-80px); width: 95%; margin:5px auto;">
+    <Video @ref="@video" Source="@Source" AutoPlay="true" StreamingLibrary="StreamingLibrary.Dash" style="max-height:100%; max-width:100%;" AutomaticallyHideControls="true" />
 </div>
 <div style="text-align:right;padding-right:2.5%">
-    <a href="/netdisk/">
-        <Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.ReplyAll"></Icon>
-        返回
+    <a href="/netdisk/" title="返回...">
+        <Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.ArrowAltCircleLeft" IconSize="IconSize.x2"></Icon>
     </a>
 </div>
 

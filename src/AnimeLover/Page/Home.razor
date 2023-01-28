@@ -2,7 +2,7 @@
 @page "/home/{Keyword?}"
 @inject NavigationManager navigationManager
 <NothingToDisplay Display="@(Animes.Count == 0)"></NothingToDisplay>
-<div class="container">
+<div class="container-fluid">
     <div class="row row-cols-1 row-cols-md-3 g-4">
         @foreach(var animie in Animes)
         {
