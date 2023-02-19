@@ -65,12 +65,14 @@ namespace AnimeLover
         private System.Windows.Forms.Form player;
         private void OpenPlayer(Anime anime, AnimeVideo video)
         {
-            player = new FormPlayer(anime, video)
+            player = new Player(anime, video)
             {
                 Opener = this
             };
             Hide();
             player.Show();
+            //player.Focus();
+            player.TopMost = true;
         }
 
         private void Toggle(bool? isFull)
