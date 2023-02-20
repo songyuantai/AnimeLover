@@ -50,8 +50,8 @@ namespace AnimeLover
             PlayerControl.BindPlay(OpenPlayer);
 
             DbManager.Merge();
-            var lib = Path.Combine(AppContext.BaseDirectory, "vlclib");
-            Core.Initialize(lib);
+            //var lib = Path.Combine(AppContext.BaseDirectory, "vlclib");
+            Core.Initialize();
 
             MouseControl.LayoutMouseDown += C_MouseDown;
 
