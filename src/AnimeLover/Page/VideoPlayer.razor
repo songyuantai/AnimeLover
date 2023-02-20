@@ -26,23 +26,23 @@
 
     protected override void OnInitialized()
     {
-        SysControl.Display(false);
+        SysEvent.NotifyCornorStateChanged(false);
     }
 
     private Task OnFullScreen()
     {
-        SysControl.FullScreenChange(true);
+        SysEvent.NotifyFullScreenToggle(true);
         return Task.CompletedTask;
     }
 
     private Task OnExitFullScreen()
     {
-        SysControl.FullScreenChange(false);
+        SysEvent.NotifyFullScreenToggle(false);
         return Task.CompletedTask;
     }
 
     public void Dispose()
     {
-        SysControl.Display(true);
+        SysEvent.NotifyCornorStateChanged(true);
     }
 }

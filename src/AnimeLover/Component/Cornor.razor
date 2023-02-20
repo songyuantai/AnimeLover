@@ -102,7 +102,7 @@
 
     protected override void OnInitialized()
     {
-        ScrollControl.ScrollEvent += OnScroll;
+        SysEvent.Scrolling += OnScroll;
         var db = BlazorApp.Database;
 
         SeasonValueChanged(Util.GetCurrentSeason());

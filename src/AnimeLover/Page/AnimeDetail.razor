@@ -197,12 +197,12 @@
             }
             else
             {
-                PlayerControl.PlayVideo(_anime, video);
+                SysEvent.NotifyAnimePlay(_anime, video);
             }
         }
         else
         {
-            PlayerControl.PlayVideo(_anime, video);
+            SysEvent.NotifyAnimePlay(_anime, video);
         }
     }
 

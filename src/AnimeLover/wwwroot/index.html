@@ -38,16 +38,6 @@
             });
         }
 
-        window.onscroll = function () {
-            var scrollTop = 0
-            if (document.documentElement && document.documentElement.scrollTop) {
-                scrollTop = document.documentElement.scrollTop
-            } else if (document.body) {
-                scrollTop = document.body.scrollTop
-            }
-            DotNet.invokeMethodAsync('AnimeLover', 'Scroll', scrollTop);
-        }
-
         function scrollToTop() {
             document.body.scrollTop = document.documentElement.scrollTop = 0;
         }
@@ -62,6 +52,17 @@
                     DotNet.invokeMethodAsync('AnimeLover', 'MouseDown', button, x, y);
                 }
             });
+
+            window.onscroll = function () {
+                var scrollTop = 0
+                if (document.documentElement && document.documentElement.scrollTop) {
+                    scrollTop = document.documentElement.scrollTop
+                } else if (document.body) {
+                    scrollTop = document.body.scrollTop
+                }
+                console.log('scrolling')
+                DotNet.invokeMethodAsync('AnimeLover', 'Scroll', scrollTop);
+            }
         });
     </script>
 </body>

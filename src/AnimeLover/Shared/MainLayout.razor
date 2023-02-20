@@ -71,8 +71,8 @@
 
     protected override void OnInitialized()
     {
-        SysControl.OnCornorDisplayChanged -= OnCornorChanged;
-        SysControl.OnCornorDisplayChanged += OnCornorChanged;
+        SysEvent.CornorStateChange -= OnCornorChanged;
+        SysEvent.CornorStateChange += OnCornorChanged;
     }
 
     Cornor cornor;
@@ -118,6 +118,6 @@
 
     private void FullScreen()
     {
-        SysControl.FullScreenChange();
+        SysEvent.NotifyFullScreenToggle();
     }
 }

@@ -47,19 +47,19 @@ namespace AnimeLover
                 }
             };
 
-            PlayerControl.BindPlay(OpenPlayer);
+            SysEvent.AnimePlay += OpenPlayer;
 
             DbManager.Merge();
             //var lib = Path.Combine(AppContext.BaseDirectory, "vlclib");
             Core.Initialize();
 
-            MouseControl.LayoutMouseDown += C_MouseDown;
+            SysEvent.WebviewMouseDown += C_MouseDown;
 
             (this.Width, this.Height) = Tool.GetFitRect(this);
 
             SelftHostHelper.Start();
 
-            SysControl.OnFullScreenToggle += Toggle;
+            SysEvent.FullScreenToggle += Toggle;
         }
 
         private System.Windows.Forms.Form player;
