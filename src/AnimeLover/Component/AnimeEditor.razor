@@ -102,8 +102,6 @@
             var success = BlazorApp.Database.Updateable(data).ExecuteCommand() > 0;
             if (success)
             {
-                if(oldPath != data.PhysicalPath)
-                    Directory.Move(oldPath, data.PhysicalPath);
                 await MessageService.Success("保存成功！");
                 await HideModal();
 

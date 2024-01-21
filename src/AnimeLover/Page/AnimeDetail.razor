@@ -252,6 +252,13 @@
 
     private bool scanDisabled = false;
 
+    private bool isVideo(string fileName)
+    {
+        var extension = System.IO.Path.GetExtension(fileName).ToUpper();
+        var extensions = new string[] { ".MP4", ".FLV", ".AVI", ".MOV", ".WMV", ".MKV" };
+        return extensions.Contains(extension);
+    }
+
     /// <summary>
     /// 扫描番剧视频
     /// </summary>
@@ -263,8 +270,8 @@
 
         if (Directory.Exists(_anime.PhysicalPath))
         {
-            var files = Directory.GetFiles(_anime.PhysicalPath).Where(m => Path.GetExtension(m).ToLower()!= ".torrent");
-            for(var i = 1; i <= 50; i++)
+            var files = Directory.GetFiles(_anime.PhysicalPath).Where(m => isVideo(m));
+            for(var i = 1; i <= files.Count() + 1; i++)
             {
                 var episode = i.ToString().PadLeft(2, '0');
                 var file = files.FirstOrDefault(m => m.Contains($"[{episode}]"));
@@ -275,6 +282,9 @@
                     {
                         if(string.IsNullOrEmpty(video.PhysicalPath))
                         {
+                            video.PhysicalPath = file;
+                            await BlazorApp.Database.Updateable(video).ExecuteCommandAsync();
+                        } else {
                             video.PhysicalPath = file;
                             await BlazorApp.Database.Updateable(video).ExecuteCommandAsync();
                         }

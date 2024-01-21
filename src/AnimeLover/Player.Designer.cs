@@ -243,7 +243,8 @@ namespace AnimeLover
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(24)))), ((int)(((byte)(24)))), ((int)(((byte)(24)))));
-            this.ClientSize = new System.Drawing.Size(1360, 860);
+            //1360, 860
+            this.ClientSize = new System.Drawing.Size(1920, 1080);
             this.Controls.Add(this.bottomPanel);
             this.Controls.Add(this.topPanel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));

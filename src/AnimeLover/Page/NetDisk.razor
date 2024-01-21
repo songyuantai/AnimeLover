@@ -1,5 +1,6 @@
 ﻿@page "/netdisk/"
 @using System.Web;
+@inject IJSRuntime jsRuntime
 @inject NavigationManager navigationManager
 
 <div class="container-fluid">
@@ -16,9 +17,24 @@
                         }
                     </div>
                     <div class="input-group" style="width:35%;">
+                        <div class="btn-group" role="group">
+                            <Dropdown>
+                                <DropdownToggle Color="Color.Primary" Outline="true">
+                                    类型
+                                </DropdownToggle>
+                                <DropdownMenu>
+                                    @foreach(var kv in types) {
+                                        <DropdownItem @onclick="@(() => ChagenType(kv.Value))">@kv.Key</DropdownItem>
+                                    }
+                                </DropdownMenu>
+                            </Dropdown>
+                            <button type="button" class="btn btn-outline-primary" @onclick="ChangeAll"> @GetAllSelectedText() </button>
+                            <button type="button" class="btn btn-outline-primary" @onclick="ShowTemplateEdit">修改</button>
+                            <button type="button" class="btn btn-outline-primary" @onclick="(() => DeleteFiles(selected))">删除</button>
+                        </div>
                         <input class="form-control" type="text" name="path" @bind-value="@FsTool.Path" placeholder="请输入地址..." @onkeydown="@KeyDown" />
                         <span class="input-group-append">
-                            <button type="button" class="btn btn-primary" @onclick="@GetFiles">加载</button>
+                            <button type="button" class="btn btn-primary" @onclick="@Refresh">加载</button>
                         </span>
                     </div>
                 </div>
@@ -28,7 +44,9 @@
                 @foreach (var file in FsItems)
                 {
                     <li class="list-group-item list-group-item-action text-primary d-flex justify-content-between" @onclick="@(() => OpenDir(file))" style="cursor:pointer">
+                        
                         <div>
+                            <input type="checkbox" value="@file.Path" checked="@isChecked(file.Path)" @onclick:stopPropagation="true"  @onclick="@(() => Change(!isChecked(file.Path), file.Path))" style="margin-right:5px;"/>
                             @if (file.IsFile)
                             {
                                 <Icon Name="@("fa-file")" IconStyle="IconStyle.Solid"></Icon>
@@ -41,15 +59,17 @@
                         </div>
                         <div>
 
-                            @if (file.IsFile && isVideo(file.Path))
+                            @if (file.IsFile)
                             {
-                                <a class="mr-3" @onclick="@(() => PlayFile(file))" @onclick:stopPropagation="true">
-                                    <Icon Name="@("fa-duotone fa-lg fa-play")" IconStyle="IconStyle.Solid"></Icon>
+                                <a class="mr-3" @onclick="@(() => Copy(file.Name))" @onclick:stopPropagation="true">
+                                    <Icon Name="@("fa-duotone fa-lg fa-copy")" IconStyle="IconStyle.Solid"></Icon>
                                 </a>
-                            }
-                            <a @onclick="@(() => FormMain.OpenPath(file.Path))" @onclick:stopPropagation="true">
-                                <Icon Name="@("fa-duotone fa-lg fa-folder-open")" IconStyle="IconStyle.Solid"></Icon>
+                            } 
+
+                            <a class="text-primary" @onclick="@(() => DeleteFiles(new string[]{ file.Path }))" @onclick:stopPropagation="true">
+                                <Icon Name="@("fa-duotone fa-lg fa-trash")" IconStyle="IconStyle.Solid"></Icon>
                             </a>
+
                         </div>
                     </li>
                 }
@@ -60,21 +80,85 @@
 </div>
 
 
+<Modal @ref="editPathTemplate">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>编辑模板</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Field>
+                <TextEdit Placeholder="请输入名称模板，{ep}表示集数..." @bind-Text="@pathTemplate" />
+            </Field>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideTemplateEdit">关闭</Button>
+            <Button Color="Color.Primary" Clicked="@SaveTemplateEdit">保存</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
 
 
 
 @code {
 
+    
+    [Inject] IMessageService MessageService { get; set; }
+
     private List<FsItem> FsItems;
+
+    private HashSet<string> selected = new();
+
+    private Dictionary<string, string[]> types = new();
+
+    private void BindTypes() {
+        types.Clear();
+        var dic = FsItems?.Where(m => m.IsFile).Select(m => m.Path).GroupBy(m => Path.GetExtension(m)).ToDictionary(g => g.Key, g => g.ToArray());
+        foreach(var kv in dic){
+            types.Add(kv.Key, kv.Value);
+        }
+
+    }
+
+
+    private string GetAllSelectedText() => selected.Count == FsItems?.Count ? "全不选" : "全选";
+
+    private bool isChecked(string path) => selected.Contains(path);
 
     protected override void OnInitialized()
     {
-        GetFiles();
+        Refresh();
     }
 
-    private void GetFiles()
+    private void ChangeAll() => Change(selected.Count != FsItems?.Count, FsItems.Select(m => m.Path).ToArray());
+
+    private void Change(bool select, params string[] paths){
+        
+        if(null == paths)
+            return;
+
+        foreach(var path in paths) {
+            if(string.IsNullOrEmpty(path))
+                return;
+
+            if(select){
+                selected.Add(path);
+            } else if(selected.Contains(path)){
+                selected.Remove(path);
+            }
+        }
+    }
+
+    private void ChagenType(params string[] paths) {
+
+        Change(true, paths);
+    }
+
+    private void Refresh()
     {
+        selected.Clear();
         FsItems = FsTool.GetFsItems();
+        BindTypes();
         StateHasChanged();
     }
 
@@ -83,10 +167,7 @@
         if (!item.IsFile)
         {
             FsTool.Path = item.Path;
-            GetFiles();
-        } else if (isVideo(item.Path))
-        {
-            PlayFile(item);
+            Refresh();
         }
         else
         {
@@ -112,15 +193,79 @@
     private void GotoDrive(DriveInfo drive)
     {
         FsTool.Path = drive.RootDirectory.ToString();
-        GetFiles();
+        Refresh();
     }
 
     private void KeyDown(KeyboardEventArgs keyboardEvent)
     {
         if (keyboardEvent.Code == "Enter" || keyboardEvent.Code == "NumpadEnter")
         {
-            GetFiles();
+            Refresh();
         }
+    }
+
+    private async void Copy(string text){
+        //string value = Path.GetFileNameWithoutExtension(text);
+        pathTemplate = text;
+        //await jsRuntime.InvokeAsync<string>("Copy", value);
+        await MessageService.Success("已复制！");
+    }
+
+    private string pathTemplate;
+
+        // reference to the modal component
+    private Modal editPathTemplate;
+
+    private Task ShowTemplateEdit()
+    {
+        return editPathTemplate.Show();
+    }
+
+    private async Task SaveTemplateEdit()
+    {
+        if(string.IsNullOrEmpty(pathTemplate))
+            return;
+
+        int episode = 1;
+        int total = selected.Count.ToString().Length;
+        int length = total >= 2 ? total : 2;
+        foreach(var file in selected.OrderBy( m => m)) {
+            var dir = Path.GetDirectoryName(file);
+            var newPath = Path.Combine(dir, pathTemplate.Replace("{ep}", episode.ToString().PadLeft(length, '0')));
+
+            if(file != newPath) {
+                File.Move(file, newPath);
+            }
+            episode++;
+        }
+
+        await editPathTemplate.Hide();
+        await MessageService.Success("修改成功！");
+        Refresh();
+    }
+
+    private async Task DeleteFiles(IEnumerable<string> files) {
+        bool yes = await MessageService.Confirm("确定要删除？");
+        if(!yes)
+            return;
+
+        foreach(var file in files){
+
+            if(File.Exists(file)) {
+                File.Delete(file);
+            } 
+
+            if(Directory.Exists(file)){
+                Directory.Delete(file, true);
+            }
+ 
+        }
+        Refresh();
+    }
+
+    private Task HideTemplateEdit()
+    {
+        return editPathTemplate.Hide();
     }
 
 

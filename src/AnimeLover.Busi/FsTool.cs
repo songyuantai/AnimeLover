@@ -25,6 +25,21 @@ namespace AnimeLover.Busi
             return sb.ToString();
         }
 
+        /*public static List<FsItem> GetNavItems() {
+            if (string.IsNullOrEmpty(Path))
+            {
+                Path = "C:\\";
+            }
+
+            var items = Path.Split("\\");
+            var list = new FsItem();
+            for(var i = 0; i < items.Length; i++) {
+                
+            }
+
+
+        }*/
+
         public static List<FsItem> GetFsItems()
         {
             //处理默认路径
