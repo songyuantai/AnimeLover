@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,14 +5,10 @@ using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using AnimeLover.Event;
-using AnimeLover.Page;
 using AnimeLover.Busi;
 using AnimeLover.Model;
 using LibVLCSharp.Shared;
 using System.Runtime.InteropServices;
-using Microsoft.Web.WebView2.WinForms;
-using Microsoft.Web.WebView2.Wpf;
-using System.Runtime.CompilerServices;
 using System.Diagnostics;
 
 namespace AnimeLover

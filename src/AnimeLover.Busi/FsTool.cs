@@ -103,7 +103,7 @@ namespace AnimeLover.Busi
             }
             catch (Exception ex)
             {
-                Logger.e("", ex.Message);
+                Logger.Error("", ex.Message);
             }
             return list;
         }

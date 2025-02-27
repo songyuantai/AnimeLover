@@ -1,25 +1,47 @@
 ﻿@using AnimeLover.Event
 @inherits LayoutComponentBase
 @inject NavigationManager navigationManager
-<Layout>
-    <LayoutHeader Fixed>
-        <Bar Breakpoint="Breakpoint.Desktop"
-             Background="Background.Dark"
-             ThemeContrast="ThemeContrast.Dark">
-            <a class="navbar-brand" href="/">
-                <img src="/images/app.ico" style="width:26px;"/>
-                AiFan
-            </a>
+<Layout Sider="true">
+  <LayoutSider >
+    <LayoutSiderContent >
+        <Bar @ref="sidebar" Mode="BarMode.VerticalSmall"
+            CollapseMode="BarCollapseMode.Small"
+            Breakpoint="Breakpoint.Desktop"
+            NavigationBreakpoint="Breakpoint.Desktop"
+            ThemeContrast="ThemeContrast.Dark"
+            >
             <BarMenu>
                 <BarStart>
-                    <BarItem Class="ml-4">
-                        <BarLink To="/">番剧</BarLink>
-                    </BarItem>
-                    <BarItem Class="ml-4">
-                        <BarLink To="netdisk">文件</BarLink>
-                    </BarItem>
+                    <a class="navbar-brand" href="/">
+                        <img src="/images/app.ico" style="width:60px; "/>
+                    </a>
+                    <BarMenu>
+                        <BarItem class="mt-3">
+                            <BarLink To="/">
+                                <BarIcon IconName="IconName.Home"  />
+                                番剧
+                            </BarLink>
+                        </BarItem>
+                        <BarItem class="mt-3">
+                            <BarLink To="netdisk">
+                                <BarIcon IconName="@("fa-laptop")"/>
+                                文件
+                            </BarLink>
+                        </BarItem>
+                    </BarMenu>
                 </BarStart>
-                <BarEnd>
+            </BarMenu>
+        </Bar>
+    </LayoutSiderContent>
+  </LayoutSider>
+  <Layout>
+    <LayoutHeader Fixed="true">
+            <Bar Breakpoint="Breakpoint.Desktop"
+            Background="Background.Dark"
+            ThemeContrast="ThemeContrast.Dark">
+
+            <BarMenu>
+                <BarStart>
                     <BarItem>
                         <div class="input-group">
                             <div class="input-group-prepend">
@@ -30,7 +52,9 @@
                             <input type="text" @bind-value="@Keyword" class="form-control" placeholder="输入关键字以搜索..." @onkeyup="@InputKeyUp">
                         </div>
                     </BarItem>
-                    <BarItem Class="ml-3">
+                </BarStart>
+                <BarEnd>
+                    <BarItem>
                         <BarLink To="javascript:;" @onclick="@setting.ShowModal">
                             <Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.Cog"></Icon>
                         </BarLink>
@@ -51,23 +75,20 @@
             </BarMenu>
         </Bar>
     </LayoutHeader>
-    <Layout Sider>
-        <Layout style="margin-top:50px;">
-            <LayoutContent>
-                <Alert Color="Color.Warning" Visible="!setting.SysInited">
-                    <MessageProvider>警告</MessageProvider>
-                    <AlertDescription>系统尚未进行初始化配置，<a href="javascript:;" @onclick="@setting.ShowModal">点击这里</a>进行配置！</AlertDescription>
-                </Alert>
-                @Body
-                <Cornor @ref=cornor />
-            </LayoutContent>
-        </Layout>
-
-    </Layout>
+    <LayoutContent>
+        <Alert Color="Color.Warning" Visible="!setting.SysInited">
+        <MessageProvider>警告</MessageProvider>
+        <AlertDescription>系统尚未进行初始化配置，<a href="javascript:;" @onclick="@setting.ShowModal">点击这里</a>进行配置！</AlertDescription>
+        </Alert>
+        @Body
+        <Cornor @ref=cornor />
+    </LayoutContent>
+  </Layout>
 </Layout>
 
 <Setting @ref="setting" OnSave="SettingSaved"></Setting>
 @code {
+    private Bar sidebar;
 
     protected override void OnInitialized()
     {
@@ -79,6 +100,7 @@
     private void OnCornorChanged(bool display)
     {
         cornor.Display(display);
+        
     } 
 
     Setting setting;

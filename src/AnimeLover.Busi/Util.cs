@@ -62,9 +62,9 @@ namespace AnimeLover.Busi
                 Bitmap.Save(ms, ImageFormat.Jpeg);
                 return ms.ToArray();
             }
-            catch (ArgumentNullException ex)
+            catch (ArgumentNullException)
             {
-                throw ex;
+                throw;
             }
             finally
             {
